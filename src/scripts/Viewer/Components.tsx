@@ -29,8 +29,11 @@ export var grid: COM.SimpleGrid;
 export var caster: COM.SimpleRaycaster;
 export var culler: COM.MeshCullerRenderer;
 
+
+const input = new Map<string, number>(
+    ['w', 's', 'd', 'a', 'e', 'q'].map(key => [key, 0]) 
+);
 var container: HTMLElement;
-var cameraInput = new THREE.Vector3;
 
 const Container = styled('div')({
     resize: 'both',
@@ -40,6 +43,7 @@ const Container = styled('div')({
     width: '600px',
     height: '500px',
 })
+
 
 export default function ContainerComponent() {
     const mounted = useRef(false);
@@ -108,29 +112,24 @@ export default function ContainerComponent() {
             world.renderer.three.render(world.scene.three, world.camera.three)
         })
     }
-    
+
     function InitializeCameraControls() {
         document.addEventListener('keydown', e => {
-            if (e.repeat)
+            if(!container.matches(':hover'))
                 return;
-            const key = e.key.toLowerCase();
-        
-            if ((key == 'w' && cameraInput.x != 1) || (key == 's' && cameraInput.x != -1))
-                cameraInput.add(new THREE.Vector3(Number(key == 'w') + -Number(key == 's'), 0, 0))
-        
-            if ((key == 'd' && cameraInput.y != 1) || (key == 'a' && cameraInput.y != -1))
-                cameraInput.add(new THREE.Vector3(0, Number(key == 'd') + -Number(key == 'a'), 0))
-        
-            if ((key == ' ' && cameraInput.z != 1) || (key == 'shift' && cameraInput.z != -1))
-                cameraInput.add(new THREE.Vector3(0, 0, Number(key == ' ') + -Number(key == 'shift')))
+            
+            if(input.has(e.key.toLowerCase())) {
+                input.set(e.key.toLowerCase(), 1);
+            }
         })
         
         document.addEventListener('keyup', e => {
             if (e.repeat)
                 return;
-            const key = e.key.toLowerCase();
-        
-            cameraInput.sub(new THREE.Vector3(Number(key == 'w') + -Number(key == 's'), Number(key == 'd') + -Number(key == 'a'), Number(key == ' ') + -Number(key == 'shift')))
+            
+            if(input.has(e.key.toLowerCase())) {
+                input.set(e.key.toLowerCase(), 0);
+            }
         })
     
         const cameraControls = world.camera.controls;
@@ -138,14 +137,22 @@ export default function ContainerComponent() {
         clock.start();
         setInterval(() => {
             const deltaTime = clock.getDelta();
-        
-            if (cameraInput.length() == 0)
+
+            var direction = new THREE.Vector3(
+                input.get('w') - input.get('s'), 
+                input.get('d') - input.get('a'), 
+                input.get('e') - input.get('q')
+            );
+            
+            if (direction.length() == 0)
                 return;
+
+            direction.normalize();
+            direction.multiplyScalar(deltaTime * 20);
         
-            const input = cameraInput.clone().multiplyScalar(deltaTime * 10);
-            cameraControls.truck(input.y, 0, true);
-            cameraControls.elevate(input.z, true)
-            cameraControls.forward(input.x, true);
+            cameraControls.truck(direction.y, 0, true);
+            cameraControls.elevate(direction.z, true)
+            cameraControls.forward(direction.x, true);
         }, 10);
     }
 }
