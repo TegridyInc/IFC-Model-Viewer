@@ -145,6 +145,12 @@ document.addEventListener('onViewportLoaded', ()=>{
         transformControls = model;
     });
 
+    document.addEventListener('keyup', (e) => {
+        if(e.key == 'f' && container.matches(':hover') && selectedGroup) {
+            world.camera.controls.fitToBox(selectedGroup.boundingBox.boxMesh, true, {paddingBottom: 5, paddingTop: 5, paddingLeft: 5, paddingRight: 5});
+        }
+    })
+
     world.camera.controls.addEventListener('control', ScaleTransformControls)
     world.camera.controls.addEventListener('controlend', ScaleTransformControls)
 })

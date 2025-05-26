@@ -64,11 +64,14 @@ export default function ContainerComponent() {
         world.scene = new COM.SimpleScene(components);
         world.renderer = new OBF.PostproductionRenderer(components, container);
         world.camera = new COM.OrthoPerspectiveCamera(components);
-        
+        world.camera.controls.maxDistance = Infinity;
+        world.camera.three.far = 10000;
+
         world.scene.setup({ backgroundColor: new THREE.Color(.05, .05, .05) });
         
         highlighter.setup({ world });
         grid = grids.create(world);
+        grid.config.distance = 1000;
         caster = casters.get(world);
         
         clipper.enabled = false;
