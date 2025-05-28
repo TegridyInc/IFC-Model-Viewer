@@ -8,6 +8,7 @@ import Container, {culler, world } from './Components';
 import { IFCModel } from './IFC';
 
 import ToolBar from './Toolbar'
+import NotificationsComponent from './Notifications';
 import ModelManager from '../Functions/ModelManager.component';
 import PropertyTree from '../Functions/PropertyTree';
 import Properties from '../Functions/Properties'; 
@@ -135,6 +136,7 @@ export default function Viewer() {
                 <Docker isLeftDocker={true}/>
                 <ToolBar/>
             </Viewport>
+            <NotificationsComponent/>
             <ModelManager/>
             <PropertyTree/>
             <Properties/>
