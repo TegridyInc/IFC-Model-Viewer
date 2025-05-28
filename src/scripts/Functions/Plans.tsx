@@ -1,5 +1,6 @@
 import { plans, highlighter } from '../Viewer/Components'
 import { DisableTool, EnableTool } from '../Viewer/Toolbar'
+import { Notification } from '../Viewer/Notifications'
 import { BigButton, WindowComponent } from '../Utility/UIUtility.component'
 import { IFCDispatcher, IFCModel } from '../Viewer/IFC'
 import { useState, useRef, useEffect } from 'react'
@@ -36,14 +37,20 @@ export default function Plans() {
     }, [])
 
     async function OpenPlans(event: { target: IFCDispatcher }) {
-        if (plansContainerRef.current.parentElement != plansRootRef.current || event.target.ifc == modelOpen)
+        if (event.target.ifc == modelOpen)
             return;
-
+        
         modelOpen = event.target.ifc;
+        
+        plans.list= [];
+        try {
+            await plans.generate(event.target.ifc);
+        } catch {
+            new Notification('No Plans Found', 'warning')
+            return;
+        }
+        
         setPlans([]);
-        plans.list = [];
-        await plans.generate(event.target.ifc);
-
         const planViewButtons = plans.list.map(planView => {
             return (
                 <BigButton onClick={() => { plans.goTo(planView.id) }}>{planView.name}</BigButton>
@@ -52,7 +59,10 @@ export default function Plans() {
 
         DisableTool();
         highlighter.enabled = true;
-        plansRootRef.current.style.visibility = 'visible';
+
+        if(plansContainerRef.current.parentElement == plansRootRef.current) 
+            plansRootRef.current.style.visibility = 'visible';
+        
         setPlans(planViewButtons)
     }
 
