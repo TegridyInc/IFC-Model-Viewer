@@ -14,9 +14,12 @@ document.addEventListener('onViewportLoaded', ()=>{
 document.addEventListener('onModelAdded', (e:CustomEvent<IFCModel>)=>{
     const ifcModel = e.detail;
 
-    ifcModel.children.forEach(child =>{
-        if(child instanceof FRA.FragmentMesh) 
+    const meshState = meshStates.set(ifcModel.uuid, new Map<number, boolean>()).get(ifcModel.uuid)
+    ifcModel.children.forEach((child, i)=>{
+        if(child instanceof FRA.FragmentMesh) {
             culler.add(child);
+            meshState.set(i, true)
+        }
     })
     culler.needsUpdate = true;
     
@@ -26,14 +29,7 @@ document.addEventListener('onModelAdded', (e:CustomEvent<IFCModel>)=>{
 
 function UpdateColorMeshVisibility(event: {target: IFCDispatcher}) {
     const model = event.target.ifc;
-
-    var meshState: MeshState;
-    if(meshStates.has(model.uuid)) 
-        meshState = meshStates.get(model.uuid)
-    else {
-        meshState = new Map<number, boolean>();
-        meshStates.set(model.uuid, meshState);
-    }
+    const meshState = meshStates.get(model.uuid)
 
     if(!model.visible) {
         model.children.forEach((child, i) => {

@@ -1,5 +1,5 @@
 import * as FRA from '@thatopen/fragments'
-import { world, fragmentManager } from '../Viewer/Components'
+import { world, fragmentManager, worlds } from '../Viewer/Components'
 import {IconButton, WindowComponent, ToggleButton, FoldoutComponent} from '../Utility/UIUtility.component';
 import { LoadIFCModel } from '../Viewer/IFCLoader' 
 import {IFCGroup, IFCModel} from '../Viewer/IFC'
@@ -36,24 +36,14 @@ const ModelManagerComponent = () => {
     const containerRef = useRef<HTMLDivElement>(undefined);
     const [items, setItems] = useState<JSX.Element[]>([]);
 
-    const addModelToGroup = (e: FormEvent<HTMLInputElement>, group:IFCGroup)=>{
-        const file = e.currentTarget.files[0];
-        if (!file)
-            return;
+    const addModel = (e:CustomEvent<IFCModel>) => {   
+        groupStates.set(e.detail.group.uuid, [true]);
+        e.detail.visible = e.detail.group.visible;
+        e.detail.dispatcher.dispatchEvent({type: 'onVisibilityChanged', isVisible: e.detail.visible})
 
-        const reader = new FileReader();
-        reader.onload = () => {
-            const data = new Uint8Array(reader.result as ArrayBuffer);
-            LoadIFCModel(data, file.name.split(".ifc")[0], false, group);
-        }
-
-        reader.readAsArrayBuffer(file);
-    }
-
-    const addModel = (e:CustomEvent<IFCModel>) => {
         setItems((oldItems)=>{
-            var index = oldItems.findIndex((v) => v.key == e.detail.group.id.toString())
-
+            var index = oldItems.findIndex((v) => v.props.group.uuid == e.detail.group.uuid)
+        
             if(index != -1) {                    
                 return oldItems.map((v, i) =>{
                     if(i != index)
@@ -65,41 +55,15 @@ const ModelManagerComponent = () => {
                         if(index == -1)
                             children.push( <ModelItemComponent ifcModel={e.detail}></ModelItemComponent> );
                         
-                        const modelGroup = (
-                            <FoldoutComponent sx={{border: '1px solid var(--highlight-color)'}} name={v.props.name} inputLabel key={v.key} header={
-                                <Tooltip title='Add Model'>
-                                    <IconButton>
-                                        add
-                                        <label style={{position: 'absolute', left: 0, top: 0, width: '100%', height: '100%'}}>
-                                            <input type="file" onChange={(event)=>{addModelToGroup(event, e.detail.group)}} accept=".ifc" hidden />
-                                        </label>
-                                    </IconButton>
-                                </Tooltip>
-                            }>
-                                {children}
-                            </FoldoutComponent>
-                        )
-
-                        return modelGroup
+                        return <ModelGroupComponent group={e.detail.group}>{children}</ModelGroupComponent>
                     }
                 })
             } else {
-                const modelGroup = (
-                    <FoldoutComponent sx={{border: '1px solid var(--highlight-color)'}} name='New Group' inputLabel key={e.detail.group.id} header={
-                        <Tooltip title='Add Model'>
-                            <IconButton>
-                                add
-                                <label style={{position: 'absolute', left: 0, top: 0, width: '100%', height: '100%'}}>
-                                    <input type="file" onChange={(event)=>{addModelToGroup(event, e.detail.group)}} accept=".ifc" hidden />
-                                </label>
-                            </IconButton>
-                        </Tooltip>
-                    }> 
+                return [...oldItems, 
+                    <ModelGroupComponent group={e.detail.group}>
                         {[<ModelItemComponent ifcModel={e.detail}></ModelItemComponent>]}
-                    </FoldoutComponent>
-                )
-
-                return [...oldItems, modelGroup]
+                    </ModelGroupComponent>
+                ]
             }
         })
     }
@@ -120,34 +84,23 @@ const ModelManagerComponent = () => {
             e.detail.group.recaculateBoundingBox();
 
         setItems((oldItems)=>{
-            var index = oldItems.findIndex((v) => v.key == e.detail.group.id.toString())
+            var index = oldItems.findIndex((v) => v.props.group.uuid == e.detail.group.uuid)
 
             if(!oldItems[index].props.children.length || oldItems[index].props.children.length == 1) {
+                groupStates.delete(e.detail.group.uuid)
                 return oldItems.filter((v, i) => i != index)
             } else {
                 const children = oldItems[index].props.children;
-                const newChildren = children.filter((v:any) => v.props.ifcModel.ifcID != e.detail.ifcID.toString())
-                
+                const newChildren = children.filter((value:any, index:number) => {
+                    groupStates.get(e.detail.group.uuid).filter((v, i) => i != index) 
+                    return value.props.ifcModel.ifcID != e.detail.ifcID.toString()
+                })
+
                 return oldItems.map((v, i) => {
                     if(i != index)
                         return v;
                     else {
-                        const modelGroup = (
-                            <FoldoutComponent sx={{border: '1px solid var(--highlight-color)'}} name={v.props.name} key={v.key} header={
-                                <Tooltip title='Add Model'>
-                                    <IconButton>
-                                        add
-                                        <label style={{position: 'absolute', left: 0, top: 0, width: '100%', height: '100%'}}>
-                                            <input type="file" onChange={(event)=>{addModelToGroup(event, e.detail.group)}} accept=".ifc" hidden />
-                                        </label>
-                                    </IconButton>
-                                </Tooltip>
-                            }> 
-                                {newChildren}
-                            </FoldoutComponent>
-                        )
-
-                        return modelGroup;
+                        return <ModelGroupComponent group={e.detail.group}>{newChildren}</ModelGroupComponent>;
                     }
                 })
             }
@@ -195,6 +148,9 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
     const openPropertyTree = ()=> ifcModel.dispatcher.dispatchEvent({type: 'onPropertyTree'}) 
 
     const toggleVisibility = (e:MouseEvent<HTMLElement>)=>{
+        if(!props.ifcModel.group.visible)
+            return;
+
         setVisibilty((oldValue) => !oldValue)
         const button = e.target as HTMLElement;
         button.innerHTML = !visible ? 'visibility' : 'visibility_off'; 
@@ -245,4 +201,79 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
     )
 }
 
+const groupStates = new Map<string, boolean[]>();
 
+const ModelGroupComponent = (props: {children: JSX.Element|JSX.Element[], group: IFCGroup}) => {
+    const [visible, setVisibilty] = useState(true);
+
+    const addModelToGroup = (e: FormEvent<HTMLInputElement>, group:IFCGroup)=>{
+        const file = e.currentTarget.files[0];
+        if (!file)
+            return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            groupStates.set(group.uuid, [...groupStates.get(group.uuid), true])
+            
+            const data = new Uint8Array(reader.result as ArrayBuffer);
+            LoadIFCModel(data, file.name.split(".ifc")[0], false, group);
+        }
+
+        reader.readAsArrayBuffer(file);
+    }
+
+
+    const toggleVisibility = (e:MouseEvent<HTMLElement>)=>{
+        setVisibilty((oldValue) => !oldValue)
+
+        if(!visible) {
+            const states = groupStates.get(props.group.uuid);
+            props.group.ifcModels.forEach((ifcModel, i) => {
+                ifcModel.visible = states[i];
+                ifcModel.dispatcher.dispatchEvent({type: 'onVisibilityChanged', isVisible: true});
+            })
+        } else {
+            groupStates.set(props.group.uuid, props.group.ifcModels.map(ifcModel => {
+                return ifcModel.visible;
+            }))
+
+            props.group.ifcModels.forEach(ifcModel => {
+                ifcModel.visible = false;
+                ifcModel.dispatcher.dispatchEvent({type: 'onVisibilityChanged', isVisible: false});
+            })
+        }
+
+        props.group.visible = !props.group.visible;
+    }
+
+    const focusGroup = () => {
+        world.camera.controls.fitToBox(props.group.boundingBox.boxMesh, true, {paddingBottom: 5, paddingTop: 5, paddingLeft: 5, paddingRight: 5});   
+    }
+
+    return (
+        <FoldoutComponent sx={{border: '1px solid var(--highlight-color)'}} name='New Group' inputLabel key={props.group.uuid} header={
+                <Stack sx={{alignItems: 'center'}} spacing={.5} direction={'row'}>
+                    <Tooltip title='Toggle Group Visibility'>
+                        <ToggleButton value={visible} selected={visible} onClick={toggleVisibility}>
+                            {visible ? 'visibility' : 'visibility_off'}
+                        </ToggleButton>
+                    </Tooltip>
+                    <Tooltip title='Focus Group'>
+                        <IconButton onClick={focusGroup}>
+                            view_in_ar
+                        </IconButton>
+                    </Tooltip>
+                    <Tooltip title='Add Model'>
+                        <IconButton>
+                            add
+                            <label style={{position: 'absolute', left: 0, top: 0, width: '100%', height: '100%'}}>
+                                <input type="file" onChange={(event)=>{addModelToGroup(event, props.group)}} accept=".ifc" hidden />
+                            </label>
+                        </IconButton>
+                    </Tooltip>
+                </Stack>
+            }> 
+                {props.children}
+        </FoldoutComponent>
+    )
+}
