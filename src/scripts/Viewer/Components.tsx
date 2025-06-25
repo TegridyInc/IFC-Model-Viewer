@@ -1,6 +1,7 @@
 import * as COM from '@thatopen/components'
 import * as OBF from '@thatopen/components-front'
 import * as THREE from 'three'
+import {useFullscreen} from './Viewer'
 import { useRef, useEffect } from 'react';
 import { styled } from '@mui/material';
 
@@ -35,18 +36,19 @@ const input = new Map<string, number>(
 );
 var container: HTMLElement;
 
-const Container = styled('div')({
-    resize: 'both',
+const Container = styled('div')<{fullscreen: boolean}>(({fullscreen}) => ({
+    resize: fullscreen ? 'none' : 'both',
     overflow: 'hidden',
     minWidth: '300px',
     minHeight: '200px',
-    width: '600px',
-    height: '500px',
-})
+    width: fullscreen ? '100% !important' : '600px',
+    height: fullscreen ? '100% !important' : '500px',
+}))
 
 
 export default function ContainerComponent() {
     const mounted = useRef(false);
+    const isFullscreen = useFullscreen();
 
     useEffect(()=>{
         if(!mounted.current) {
@@ -60,7 +62,7 @@ export default function ContainerComponent() {
         }
     }, [])
 
-    return <Container id='container'></Container>
+    return <Container id='container' fullscreen={isFullscreen}></Container>
 
     function InitializeComponents() {
         components.init();

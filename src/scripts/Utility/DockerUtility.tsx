@@ -1,18 +1,24 @@
+import { useFullscreen } from '../Viewer/Viewer'
 import { WindowData } from './UIUtility.component'
 import { styled, Tab, Tabs } from '@mui/material';
-import * as React from 'react';
+import { useRef, useEffect, createContext, useState, useContext } from 'react';
 
-const Docker = styled('div')({
+const Docker = styled('div')<{ fullscreen: boolean, leftDocker: boolean, open: boolean }>(({fullscreen, leftDocker, open}) => ({
     display: 'flex',
     position: 'absolute',
     flexDirection: 'column',
-    width: '400px',
-    height: 'calc(100% - 20px)',
-    top: '50%',
+    width: open ? '400px' : '0 !important',
+    height: fullscreen ? 'calc(100% - 100px)' : 'calc(100% - 20px)',
+    top: fullscreen ? 'calc(50% + 18.5px)' : '50%',
     backgroundColor: 'var(--secondary-color)',
-    border: '2px solid var(--accent-color)',
-    transform:'translateY(-50%)'
-})  
+    border: '0px solid var(--accent-color)',
+    borderWidth: open ? ((fullscreen && leftDocker) || (!fullscreen && !leftDocker) ? '2px 2px 2px 0px' : '2px 0px 2px 2px') : '0px',
+    borderRadius: (fullscreen && leftDocker) || (!fullscreen && !leftDocker) ? '0px 5px 5px 0px' : '5px 0px 0px 5px' ,
+    transform:'translateY(-50%)',
+
+    left: fullscreen ? (leftDocker ? '0' : 'unset') : (leftDocker ? 'unset' : 'calc(100% + 2px)'),
+    right: fullscreen ? (leftDocker ? 'unset' : '0') : (leftDocker ? 'calc(100% + 2px)' : 'unset'),
+}))  
 
 const DockerTabs = styled(Tabs)({
     height: '50px',
@@ -66,10 +72,10 @@ const DockerContainer = styled('div')({
 })
 
 const DockerContainerComponent = (props: {windowData: WindowData, isHidden: boolean})=>{    
-    const containerRef = React.useRef<HTMLDivElement>(undefined);
+    const containerRef = useRef<HTMLDivElement>(undefined);
 
-    const mounted = React.useRef(false);
-    React.useEffect(()=>{
+    const mounted = useRef(false);
+    useEffect(()=>{
         if(!mounted.current) {
             mounted.current = true;
 
@@ -82,52 +88,54 @@ const DockerContainerComponent = (props: {windowData: WindowData, isHidden: bool
     )
 }
 
-const DockerResizer = styled('div')({
+const DockerResizer = styled('div')<{fullscreen: boolean, leftDocker: boolean, open: boolean}>(({fullscreen, leftDocker, open}) => ({
     position: 'absolute',
+    display: open ? 'block' : 'none',
     top: 0,
     height: '100%',
     width: '6px',
     cursor: 'w-resize',
     boxShadow: '1px',
-})
 
-const DockerCloser = styled('div', {target: 'material-symbols-outlined unselectable'})({
+    right: (leftDocker && !fullscreen) || (!leftDocker && fullscreen) ? 'unset' : '0',
+    left: (leftDocker && !fullscreen) || (!leftDocker && fullscreen) ? '0' : 'unset',
+}))
+
+const DockerCloser = styled('div', {target: 'material-symbols-outlined unselectable'})<{fullscreen: boolean, leftDocker: boolean, open: boolean}>(({fullscreen, leftDocker, open}) =>({
     position: 'absolute',
     top: '50%',
     transform: 'translateY(-50%)',
-    fontSize: '30px !important',
+    fontSize: '25px !important',
     background: 'var(--secondary-color)',
     border: '1px solid var(--accent-color)',
-    padding: '5px 0px'
-})
+    borderWidth: open ? '1px' : ((leftDocker && !fullscreen) || (!leftDocker && fullscreen) ? '1px 0px 1px 1px' : '1px 1px 1px 0px'),
+    borderRadius: (leftDocker && !fullscreen) || (!leftDocker && fullscreen) ? '5px 0px 0px 5px' : '0px 5px 5px 0px',
+    padding: '10px 0px',
+
+    right: fullscreen ? (leftDocker ? 'unset' : '100%') : (leftDocker ? '100%' : 'unset'),
+    left: fullscreen ? (leftDocker ? '100%' : 'unset') : (leftDocker ? 'unset' : '100%'),
+
+}))
 
 export default function DockerComponent(props: {isLeftDocker: boolean}) {
-    const dockerRef = React.useRef<HTMLDivElement>(undefined)
-    const dockerTabsRef = React.useRef<HTMLDivElement>(undefined)
-    const dockerContainersRef = React.useRef<HTMLDivElement>(undefined)
-    const dockerResizerRef = React.useRef<HTMLDivElement>(undefined)
+    const dockerRef = useRef<HTMLDivElement>(undefined)
+    const dockerTabsRef = useRef<HTMLDivElement>(undefined)
+    const dockerContainersRef = useRef<HTMLDivElement>(undefined)
+    const dockerResizerRef = useRef<HTMLDivElement>(undefined)
 
-    const [tabs, setTabs] = React.useState([])
-    const [containers, setContainers] = React.useState([])
-    const [value, setValue] = React.useState(0);
+    const [tabs, setTabs] = useState([])
+    const [containers, setContainers] = useState([])
+    const [value, setValue] = useState(0);
+    const [isOpen, setIsOpen] = useState(true);
+    const isFullscreen = useFullscreen();
 
     var viewport: HTMLElement;
 
-    const mounted = React.useRef(false)
-    React.useEffect(()=>{
+    const mounted = useRef(false);
+    useEffect(()=>{
         if(!mounted.current) {
             mounted.current = true;
-            viewport = document.getElementById('viewport');
-            const docker = dockerRef.current;
-            const direction = props.isLeftDocker ? -1 : 1;
-
-            const resizeDocker = (e: MouseEvent)=> {
-                docker.style.width = (docker.clientWidth + e.movementX * direction)  + 'px';
-            }
-
-            dockerResizerRef.current.addEventListener('mousedown', () => document.addEventListener('mousemove', resizeDocker))
-            document.addEventListener('mouseup', () => document.removeEventListener('mousemove', resizeDocker))
-        
+            
             document.addEventListener('onWindowAdded', (e:CustomEvent<WindowData>)=>{
                 const window = e.detail;
                 window.header.addEventListener('mousedown', ()=>{
@@ -136,13 +144,12 @@ export default function DockerComponent(props: {isLeftDocker: boolean}) {
                     }, {once: true})
                 })
             })
-            
         }
 
         changeTabs(value)
     })
 
-    const handleWindowMovement = (event: MouseEvent | React.MouseEvent, windowData: WindowData) => {
+    const handleWindowMovement = (event: any, windowData: WindowData) => {
         const docker = dockerRef.current;
 
         const offsetLeft = docker.offsetLeft + viewport.offsetLeft;
@@ -177,11 +184,9 @@ export default function DockerComponent(props: {isLeftDocker: boolean}) {
 
         setTabs(oldTabs => [...oldTabs, tab])
         setContainers(oldContainers => [...oldContainers, container])
-
-        console.log('E')
     }
 
-    const removeTabFromDocker = (windowData: WindowData, mouseEvent: React.MouseEvent)=>{
+    const removeTabFromDocker = (windowData: WindowData, mouseEvent: any)=>{
         const dockerContainer = windowData.container.parentElement;
         var index = -1;
 
@@ -215,50 +220,34 @@ export default function DockerComponent(props: {isLeftDocker: boolean}) {
         }
     }
 
-    const toggleDocker = (e:React.MouseEvent) => {
-        const closer = e.target as HTMLElement;
-        const isRight = closer.innerHTML.endsWith('right')
-
-        closer.innerHTML = isRight ? 'keyboard_arrow_left' : 'keyboard_arrow_right'
-
-        if((isRight && props.isLeftDocker) || (!isRight && !props.isLeftDocker)) {
-            dockerRef.current.style.width = '0px'
-            dockerRef.current.style.border = 'unset'
-            props.isLeftDocker ? closer.style.right = 'calc(100% - 2px)' : closer.style.left = 'calc(100% - 2px)'  
-        } else {
-            props.isLeftDocker ? closer.style.right = '100%' : closer.style.left = '100%'  
-            dockerRef.current.style.width = ''
-            dockerRef.current.style.border = ''
-            
-            props.isLeftDocker ? dockerRef.current.style.borderRightWidth = '0px' : dockerRef.current.style.borderLeftWidth = '0px'
+    const resizeDocker = () => {
+        console.log(isFullscreen)
+        const direction = props.isLeftDocker ? -1 : 1;
+        
+        const resize = (e: any)=> {
+            dockerRef.current.style.width = (dockerRef.current.clientWidth + e.movementX * direction * (isFullscreen ? -1 : 1)) + 'px';
         }
+
+        document.addEventListener('mousemove', resize)
+        document.addEventListener('mouseup', () => document.removeEventListener('mousemove', resize))
+    }
+
+    const toggleDocker = (e:any) => {
+        setIsOpen(!isOpen);
     }
 
     return (
-        <Docker ref={dockerRef} style={props.isLeftDocker ? 
-        {
-            right: 'calc(100% + 2px)',  
-            borderRightWidth: '0px', 
-            borderTopLeftRadius: '5px', 
-            borderBottomLeftRadius: '5px'
-        } : {
-            left: 'calc(100% + 2px)',
-            borderLeftWidth: '0px', 
-            borderTopRightRadius: '5px', 
-            borderBottomRightRadius: '5px'
-        }} >
+        <Docker ref={dockerRef} fullscreen={isFullscreen} leftDocker={props.isLeftDocker} open={isOpen} >
             <DockerTabs variant="fullWidth" value={value} onChange={(e,v)=>{changeTabs(v)}} ref={dockerTabsRef}>{tabs}</DockerTabs>
             <DockerContainers ref={dockerContainersRef}>{containers}</DockerContainers>
-            <DockerResizer ref={dockerResizerRef} style={props.isLeftDocker ? {left: 0, transform: 'translateX(calc(-50% - 1px))'} : {right: 0, transform: 'translateX(calc(50% + 1px))'}}/>
-            <DockerCloser onClick={toggleDocker} style={props.isLeftDocker ? {
-                right: '100%',
-                borderTopLeftRadius: '2px',
-                borderBottomLeftRadius: '2px',
-            } : {
-                left: '100%',
-                borderTopRightRadius: '2px',
-                borderBottomRightRadius: '2px',
-            }}>{props.isLeftDocker ? 'keyboard_arrow_right' : 'keyboard_arrow_left'}</DockerCloser>
+            <DockerResizer ref={dockerResizerRef} fullscreen={isFullscreen} leftDocker={props.isLeftDocker} open={isOpen} onMouseDown={resizeDocker}/>
+            <DockerCloser onClick={toggleDocker} fullscreen={isFullscreen} leftDocker={props.isLeftDocker} open={isOpen}>
+                {
+                    ((props.isLeftDocker && isOpen && !isFullscreen) || (props.isLeftDocker && !isOpen && isFullscreen)) ||
+                    ((!props.isLeftDocker && !isOpen && !isFullscreen) || (!props.isLeftDocker && isOpen && isFullscreen)) ? 
+                    'keyboard_arrow_right' : 'keyboard_arrow_left'
+                }
+            </DockerCloser>
         </Docker>
     )
-}
+}   

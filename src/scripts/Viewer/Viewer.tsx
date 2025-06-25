@@ -1,8 +1,9 @@
 import * as Stats from 'stats.js';
 import { IfcAPI } from 'web-ifc'
 
-import { styled } from '@mui/material'
-import { useRef, MouseEvent, useEffect } from 'react';
+import { Icon, styled } from '@mui/material'
+import { useRef, useState, MouseEvent, useEffect, createContext, useContext } from 'react';
+import { IconButton } from '../Utility/UIUtility.component';
 
 import Container, {culler, world } from './Components';
 import { IFCModel } from './IFC';
@@ -47,31 +48,65 @@ await webIFC.Init();
 
 global.onViewportLoaded = new CustomEvent('onViewportLoaded');
 
-const Viewport = styled('div')({
+const Viewport = styled('div')<{fullscreen: boolean}>(({fullscreen})=>({
     display: 'flex',
     alignItems: 'center',
     flexDirection: 'column',
     position: 'absolute',
+    width: fullscreen ? '100%' : 'unset',
+    height: fullscreen ? '100%' : 'unset',
     zIndex: '100',
-    top: 'calc(50% - 200px)',
-    left: 'calc(50% - 300px)',
+    top: fullscreen ? '0 !important' : 'calc(50% - 200px)',
+    left: fullscreen ? '0 !important' : 'calc(50% - 300px)',
 
-    border: '2px solid var(--accent-color)',
-    borderRadius: '5px',
-})
+    border: '0px solid var(--accent-color)',
+    borderWidth: fullscreen ? '0px' : '2px',
+    borderRadius: fullscreen ? '0px' : '5px',
+}))
 
-const ViewportLabel = styled('div')({
+const ViewportLabel = styled('div')<{fullscreen: boolean}>(({fullscreen}) => ({
+    position: 'relative',
     backgroundColor: 'var(--secondary-color)',
     padding: '10px 5px',
     width: '100%',
     textAlign: 'center',
-    borderRadius: '5px',
+    borderRadius: fullscreen ? '0px' : '5px 5px 0px 0px',
     boxSizing: 'border-box',
     fontWeight: 'bold'
+}))
+
+const WindowButtons = styled('div')({
+    position: 'absolute',
+    right: '5px',
+    top: '50%',
+    transform: 'translateY(-50%)',
 })
+
+const Fullscreen = styled(IconButton, {target: 'material-symbols-outlined'})({
+    backgroundColor: 'rgba(0, 0, 0, 0)', 
+    border: 'unset !important',
+    boxShadow: 'unset !important',
+})
+
+const Minimize = styled(IconButton, {target: 'material-symbols-outlined'})({
+    backgroundColor: 'rgba(0, 0, 0, 0)', 
+    border: 'unset !important',
+    boxShadow: 'unset !important',
+})
+
+const Close = styled(IconButton, {target: 'material-symbols-outlined'})({
+    backgroundColor: 'rgba(0, 0, 0, 0)', 
+    border: 'unset',
+    boxShadow: 'unset',
+})
+
+const FullscreenContext = createContext(false);
+
+export const useFullscreen = () => useContext(FullscreenContext);
 
 export default function Viewer() {
     const viewportRef = useRef<HTMLDivElement>(undefined)
+    const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
 
     var xOffset = 0;
     var yOffset = 0;
@@ -87,8 +122,23 @@ export default function Viewer() {
     }
 
     const moveViewport = (e: any) => {
+        if(isFullscreen)
+            return;
+
         viewportRef.current.style.top = `${yOffset + e.clientY}px`;
         viewportRef.current.style.left = `${xOffset + e.clientX}px`;
+    }
+
+    const toggleFullscreen = () => {
+        setIsFullscreen(!isFullscreen);
+    }
+
+    const toggleMinimize = () => {
+
+    }
+
+    const closeViewport = () => {
+
     }
     
     const mounted = useRef(false);
@@ -128,9 +178,16 @@ export default function Viewer() {
     }, []) 
 
     return (     
-        <>
-            <Viewport ref={viewportRef} id='viewport'>
-                <ViewportLabel className='unselectable' onMouseDown={handleViewport}>IFC Viewer</ViewportLabel>
+        <FullscreenContext.Provider value={isFullscreen}>
+            <Viewport ref={viewportRef} id='viewport' fullscreen={isFullscreen}>
+                <ViewportLabel className='unselectable' onMouseDown={handleViewport} fullscreen={isFullscreen}>
+                    IFC Viewer
+                    <WindowButtons>
+                        <Minimize onClick={toggleMinimize}>minimize</Minimize>
+                        <Fullscreen onClick={toggleFullscreen}>{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</Fullscreen>
+                        <Close onClick={closeViewport}>close</Close>
+                    </WindowButtons>
+                </ViewportLabel>
                 <Container/>
                 <Docker isLeftDocker={false}/>
                 <Docker isLeftDocker={true}/>
@@ -143,6 +200,6 @@ export default function Viewer() {
             <SpatialStructure/>
             <Plans/>
             <Settings/>
-        </>
+        </FullscreenContext.Provider>
     );
 }
