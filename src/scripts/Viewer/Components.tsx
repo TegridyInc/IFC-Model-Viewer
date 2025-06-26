@@ -1,7 +1,7 @@
 import * as COM from '@thatopen/components'
 import * as OBF from '@thatopen/components-front'
 import * as THREE from 'three'
-import {useFullscreen} from './Viewer'
+import {viewportContext} from './Viewer'
 import { useRef, useEffect } from 'react';
 import { styled } from '@mui/material';
 
@@ -48,7 +48,7 @@ const Container = styled('div')<{fullscreen: boolean}>(({fullscreen}) => ({
 
 export default function ContainerComponent() {
     const mounted = useRef(false);
-    const isFullscreen = useFullscreen();
+    const context = viewportContext();
 
     useEffect(()=>{
         if(!mounted.current) {
@@ -62,7 +62,7 @@ export default function ContainerComponent() {
         }
     }, [])
 
-    return <Container id='container' fullscreen={isFullscreen}></Container>
+    return <Container id='container' fullscreen={context.fullscreen}></Container>
 
     function InitializeComponents() {
         components.init();

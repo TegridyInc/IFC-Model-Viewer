@@ -1,4 +1,4 @@
-import { useFullscreen } from '../Viewer/Viewer'
+import { viewportContext } from '../Viewer/Viewer'
 import { WindowData } from './UIUtility.component'
 import { styled, Tab, Tabs } from '@mui/material';
 import { useRef, useEffect, createContext, useState, useContext } from 'react';
@@ -127,7 +127,7 @@ export default function DockerComponent(props: {isLeftDocker: boolean}) {
     const [containers, setContainers] = useState([])
     const [value, setValue] = useState(0);
     const [isOpen, setIsOpen] = useState(true);
-    const isFullscreen = useFullscreen();
+    const context = viewportContext();
 
     var viewport: HTMLElement;
 
@@ -144,6 +144,8 @@ export default function DockerComponent(props: {isLeftDocker: boolean}) {
                     }, {once: true})
                 })
             })
+
+            viewport = document.getElementById('viewport');
         }
 
         changeTabs(value)
@@ -221,11 +223,11 @@ export default function DockerComponent(props: {isLeftDocker: boolean}) {
     }
 
     const resizeDocker = () => {
-        console.log(isFullscreen)
+        console.log(context)
         const direction = props.isLeftDocker ? -1 : 1;
         
         const resize = (e: any)=> {
-            dockerRef.current.style.width = (dockerRef.current.clientWidth + e.movementX * direction * (isFullscreen ? -1 : 1)) + 'px';
+            dockerRef.current.style.width = (dockerRef.current.clientWidth + e.movementX * direction * (context ? -1 : 1)) + 'px';
         }
 
         document.addEventListener('mousemove', resize)
@@ -237,14 +239,14 @@ export default function DockerComponent(props: {isLeftDocker: boolean}) {
     }
 
     return (
-        <Docker ref={dockerRef} fullscreen={isFullscreen} leftDocker={props.isLeftDocker} open={isOpen} >
+        <Docker ref={dockerRef} fullscreen={context.fullscreen} leftDocker={props.isLeftDocker} open={isOpen} >
             <DockerTabs variant="fullWidth" value={value} onChange={(e,v)=>{changeTabs(v)}} ref={dockerTabsRef}>{tabs}</DockerTabs>
             <DockerContainers ref={dockerContainersRef}>{containers}</DockerContainers>
-            <DockerResizer ref={dockerResizerRef} fullscreen={isFullscreen} leftDocker={props.isLeftDocker} open={isOpen} onMouseDown={resizeDocker}/>
-            <DockerCloser onClick={toggleDocker} fullscreen={isFullscreen} leftDocker={props.isLeftDocker} open={isOpen}>
+            <DockerResizer ref={dockerResizerRef} fullscreen={context.fullscreen} leftDocker={props.isLeftDocker} open={isOpen} onMouseDown={resizeDocker}/>
+            <DockerCloser onClick={toggleDocker} fullscreen={context.fullscreen} leftDocker={props.isLeftDocker} open={isOpen}>
                 {
-                    ((props.isLeftDocker && isOpen && !isFullscreen) || (props.isLeftDocker && !isOpen && isFullscreen)) ||
-                    ((!props.isLeftDocker && !isOpen && !isFullscreen) || (!props.isLeftDocker && isOpen && isFullscreen)) ? 
+                    ((props.isLeftDocker && isOpen && !context) || (props.isLeftDocker && !isOpen && context)) ||
+                    ((!props.isLeftDocker && !isOpen && !context) || (!props.isLeftDocker && isOpen && context)) ? 
                     'keyboard_arrow_right' : 'keyboard_arrow_left'
                 }
             </DockerCloser>
