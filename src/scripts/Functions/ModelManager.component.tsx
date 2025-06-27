@@ -18,7 +18,6 @@ const ModelItem = styled('div')({
     alignItems: 'center',
     flexDirection: 'row',
     padding: '5px',
-    backgroundColor: 'var(--secondary-color)',
     borderRadius: '5px',
 })
 
@@ -251,7 +250,7 @@ const ModelGroupComponent = (props: {children: JSX.Element|JSX.Element[], group:
     }
 
     return (
-        <FoldoutComponent sx={{border: '1px solid var(--highlight-color)'}} name='New Group' inputLabel key={props.group.uuid} header={
+        <FoldoutComponent sx={{border: '1px solid', borderColor: 'secondary.light'}} name='New Group' inputLabel key={props.group.uuid} header={
                 <Stack sx={{alignItems: 'center'}} spacing={.5} direction={'row'}>
                     <Tooltip title='Toggle Group Visibility'>
                         <ToggleButton value={visible} selected={visible} onClick={toggleVisibility}>

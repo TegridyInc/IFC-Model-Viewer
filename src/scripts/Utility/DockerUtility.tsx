@@ -3,15 +3,15 @@ import { WindowData } from './UIUtility.component'
 import { styled, Tab, Tabs } from '@mui/material';
 import { useRef, useEffect, createContext, useState, useContext } from 'react';
 
-const Docker = styled('div')<{ fullscreen: boolean, leftDocker: boolean, open: boolean }>(({fullscreen, leftDocker, open}) => ({
+const Docker = styled('div')<{ fullscreen: boolean, leftDocker: boolean, open: boolean }>(({theme, fullscreen, leftDocker, open}) => ({
     display: 'flex',
     position: 'absolute',
     flexDirection: 'column',
     width: open ? '400px' : '0 !important',
     height: fullscreen ? 'calc(100% - 100px)' : 'calc(100% - 20px)',
     top: fullscreen ? 'calc(50% + 18.5px)' : '50%',
-    backgroundColor: 'var(--secondary-color)',
-    border: '0px solid var(--accent-color)',
+    backgroundColor: theme.palette.primary.main,
+    border: `0px solid ${theme.palette.secondary.light}`,
     borderWidth: open ? ((fullscreen && leftDocker) || (!fullscreen && !leftDocker) ? '2px 2px 2px 0px' : '2px 0px 2px 2px') : '0px',
     borderRadius: (fullscreen && leftDocker) || (!fullscreen && !leftDocker) ? '0px 5px 5px 0px' : '5px 0px 0px 5px' ,
     transform:'translateY(-50%)',
@@ -42,17 +42,19 @@ const DockerTabs = styled(Tabs)({
     }
 })
 
-const DockerTab = styled(Tab)({
+const DockerTab = styled(Tab)(({theme})=>({
     fontWeight: 'bold',
     backgroundColor: '#212121',
-    color: 'var(--highlight-color)',
+    color: theme.palette.secondary.light,
     minHeight: 'unset',
     
     '&.Mui-selected': {
-        color: 'var(--text-color)',
-        backgroundColor: 'var(--secondary-color)',
+        color: theme.palette.text.primary,
+        backgroundColor: theme.palette.secondary.main,
+        border: `0px solid ${theme.palette.secondary.light}`,
+        borderBottomWidth: '1px',
     }
-})
+}))
 
 const DockerContainers = styled('div')({
     height: '100%',
@@ -101,13 +103,13 @@ const DockerResizer = styled('div')<{fullscreen: boolean, leftDocker: boolean, o
     left: (leftDocker && !fullscreen) || (!leftDocker && fullscreen) ? '0' : 'unset',
 }))
 
-const DockerCloser = styled('div', {target: 'material-symbols-outlined unselectable'})<{fullscreen: boolean, leftDocker: boolean, open: boolean}>(({fullscreen, leftDocker, open}) =>({
+const DockerCloser = styled('div', {target: 'material-symbols-outlined unselectable'})<{fullscreen: boolean, leftDocker: boolean, open: boolean}>(({theme, fullscreen, leftDocker, open}) =>({
     position: 'absolute',
     top: '50%',
     transform: 'translateY(-50%)',
     fontSize: '25px !important',
-    background: 'var(--secondary-color)',
-    border: '1px solid var(--accent-color)',
+    background: theme.palette.secondary.main,
+    border: `1px solid ${theme.palette.secondary.light}`,
     borderWidth: open ? '1px' : ((leftDocker && !fullscreen) || (!leftDocker && fullscreen) ? '1px 0px 1px 1px' : '1px 1px 1px 0px'),
     borderRadius: (leftDocker && !fullscreen) || (!leftDocker && fullscreen) ? '5px 0px 0px 5px' : '0px 5px 5px 0px',
     padding: '10px 0px',
@@ -223,11 +225,10 @@ export default function DockerComponent(props: {isLeftDocker: boolean}) {
     }
 
     const resizeDocker = () => {
-        console.log(context)
         const direction = props.isLeftDocker ? -1 : 1;
         
         const resize = (e: any)=> {
-            dockerRef.current.style.width = (dockerRef.current.clientWidth + e.movementX * direction * (context ? -1 : 1)) + 'px';
+            dockerRef.current.style.width = (dockerRef.current.clientWidth + e.movementX * direction * (context.fullscreen ? -1 : 1)) + 'px';
         }
 
         document.addEventListener('mousemove', resize)
@@ -245,8 +246,8 @@ export default function DockerComponent(props: {isLeftDocker: boolean}) {
             <DockerResizer ref={dockerResizerRef} fullscreen={context.fullscreen} leftDocker={props.isLeftDocker} open={isOpen} onMouseDown={resizeDocker}/>
             <DockerCloser onClick={toggleDocker} fullscreen={context.fullscreen} leftDocker={props.isLeftDocker} open={isOpen}>
                 {
-                    ((props.isLeftDocker && isOpen && !context) || (props.isLeftDocker && !isOpen && context)) ||
-                    ((!props.isLeftDocker && !isOpen && !context) || (!props.isLeftDocker && isOpen && context)) ? 
+                    ((props.isLeftDocker && isOpen && !context.fullscreen) || (props.isLeftDocker && !isOpen && context.fullscreen)) ||
+                    ((!props.isLeftDocker && !isOpen && !context.fullscreen) || (!props.isLeftDocker && isOpen && context.fullscreen)) ? 
                     'keyboard_arrow_right' : 'keyboard_arrow_left'
                 }
             </DockerCloser>

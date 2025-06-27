@@ -17,26 +17,26 @@ var openToolSelection: HTMLElement;
 var currentTool = Tools.Select;
 var onToolChanged = new CustomEvent('onToolChanged', { detail: currentTool })
 
-const ViewportControls = styled(Stack)({
+const ViewportControls = styled(Stack)(({theme})=>({
     display: 'flex',
     flexDirection: 'row',
     position: 'absolute',
     bottom: '10px',
     left: '50%',
     transform: 'translateX(-50%)',
-    border: '1px solid var(--highlight-color)',
+    border: `1px solid ${theme.palette.secondary.light}`,
     borderRadius: '5px',
-    backgroundColor: 'var(--secondary-color)',
+    backgroundColor: theme.palette.secondary.dark,
     padding: '5px',
-})
+}))
 
-const ToolbarDivider = styled(Divider)({
-    backgroundColor: '#333333',
-    width: '1px',
+const ToolbarDivider = styled(Divider)(({theme})=>({
+    backgroundColor: theme.palette.secondary.light,
+    width: '0px',
     height: 'auto'
-})
+}))
 
-const ToolSelection = styled(ToggleButtonGroup)({
+const ToolSelection = styled(ToggleButtonGroup)(({theme})=>({
     display: 'flex',
     visibility: 'hidden',
     flexDirection: 'row',
@@ -46,10 +46,10 @@ const ToolSelection = styled(ToggleButtonGroup)({
     zIndex: '-10',
     left: '50%',
     transform: 'translateX(-50%)',
-    backgroundColor: 'var(--secondary-color)',
-    border: '1px solid var(--highlight-color)',
+    backgroundColor: theme.palette.secondary.dark   ,
+    border: `1px solid ${theme.palette.secondary.light}`,
     padding: '2px'
-})
+}))
 
 export default function Toolbar() {
     const toolSelectionRef = useRef<HTMLDivElement>(undefined);
@@ -133,7 +133,7 @@ export default function Toolbar() {
             </Tooltip>
             <div style={{position: 'relative'}} id='tools'>
                 <Tooltip title={'Select Tool'}>
-                    <IconButton sx={{border: '1px solid rgba(0, 0, 0, 0.12)'}} id='open-tool-selection' onClick={()=>{ toolSelectionRef.current.style.visibility = 'visible' }}>arrow_selector_tool</IconButton>
+                    <IconButton id='open-tool-selection' onClick={()=>{ toolSelectionRef.current.style.visibility = 'visible' }}>arrow_selector_tool</IconButton>
                 </Tooltip>
                 <ToolSelection id='tool-selection' ref={toolSelectionRef} value={tool} exclusive onChange={changeTool}>
                     <Tooltip title={'Highlighter'}>

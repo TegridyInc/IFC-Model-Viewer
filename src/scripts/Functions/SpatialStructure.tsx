@@ -51,7 +51,7 @@ export default function SpatialStructure() {
         })
 
         setSpatialStructure(
-            <FoldoutComponent sx={{border: '1px solid var(--highlight-color)'}} name={spatialStructure.type} header={<div style={{paddingLeft: '5px'}}>{ifcProject.Name.value}</div>}>
+            <FoldoutComponent sx={{border: '1px solid', borderColor: 'secondary.light'}} name={spatialStructure.type} header={<div style={{paddingLeft: '5px'}}>{ifcProject.Name.value}</div>}>
                 {elements}
             </FoldoutComponent>
         )

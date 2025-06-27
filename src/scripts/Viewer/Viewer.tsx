@@ -48,7 +48,7 @@ await webIFC.Init();
 
 global.onViewportLoaded = new CustomEvent('onViewportLoaded');
 
-const Viewport = styled('div')<{fullscreen: boolean, minimized: boolean}>(({fullscreen, minimized})=>({
+const Viewport = styled('div')<{fullscreen: boolean, minimized: boolean}>(({theme, fullscreen, minimized})=>({
     display: minimized ? 'none' : 'flex',
     alignItems: 'center',
     flexDirection: 'column',
@@ -59,7 +59,7 @@ const Viewport = styled('div')<{fullscreen: boolean, minimized: boolean}>(({full
     top: fullscreen ? '0 !important' : 'calc(50% - 200px)',
     left: fullscreen ? '0 !important' : 'calc(50% - 300px)',
 
-    border: '0px solid var(--accent-color)',
+    border: `0px solid ${theme.palette.accent.main}`,
     borderWidth: fullscreen ? '0px' : '2px',
     borderRadius: fullscreen ? '0px' : '5px',
 }))
@@ -75,9 +75,9 @@ const ViewportMinimized = styled(BigButton)<{minimized: boolean}>(({minimized}) 
     cursor: 'pointer',
 }));
 
-const ViewportLabel = styled('div')<{fullscreen: boolean}>(({fullscreen}) => ({
+const ViewportLabel = styled('div')<{fullscreen: boolean}>(({fullscreen, theme}) => ({
     position: 'relative',
-    backgroundColor: 'var(--secondary-color)',
+    backgroundColor: theme.palette.primary.main,
     padding: '10px 5px',
     width: '100%',
     textAlign: 'center',
@@ -146,7 +146,7 @@ export default function Viewer() {
     const closeViewport = () => {
 
     }
-    
+
     const mounted = useRef(false);
     useEffect(()=>{
         if(!mounted.current) {

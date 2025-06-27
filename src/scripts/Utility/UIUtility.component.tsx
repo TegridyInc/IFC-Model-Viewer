@@ -37,7 +37,7 @@ export const FoldoutComponent = (props: { name: string, inputLabel?: boolean, sx
                 <FoldoutExpand ref={foldoutExpand}>keyboard_arrow_up</FoldoutExpand>
             </FoldoutHeader>
             <FoldoutContainer ref={foldoutContainer} in={expanded} timeout="auto">
-                <MAT.Stack divider={<MAT.Divider sx={{opacity: 1, backgroundColor: 'var(--highlight-color)'}} flexItem variant='fullWidth' />}>
+                <MAT.Stack divider={<MAT.Divider sx={{opacity: 1, backgroundColor: 'theme.palette.secondary.light'}} flexItem variant='fullWidth' />}>
                     {props.children}
                 </MAT.Stack>
             </FoldoutContainer>
@@ -45,14 +45,14 @@ export const FoldoutComponent = (props: { name: string, inputLabel?: boolean, sx
     ) 
 }
 
-const Foldout = MAT.styled(MAT.List)({
+const Foldout = MAT.styled(MAT.List)(({theme})=> ({
     boxSizing: 'border-box',
     width: '100%',
     rowGap: '10px',
-    backgroundColor: 'var(--secondary-color)',
+    backgroundColor: theme.palette.secondary.main,
     borderRadius: '5px',
     padding: '5px'
-})
+}))
 
 const FoldoutHeader = MAT.styled('div')({
     display: 'flex',
@@ -80,13 +80,13 @@ const FoldoutLabelInput = MAT.styled(MAT.TextField)({
     }
 })
 
-const FoldoutContainer = MAT.styled(MAT.Collapse)({
+const FoldoutContainer = MAT.styled(MAT.Collapse)(({theme})=> ({
     height: 0,
     transition: 'height 0.1s',
-    border: '1px solid var(--highlight-color)',
+    border: `1px solid ${theme.palette.secondary.light}`,
     borderRadius: '5px',
     boxShadow: '1px 1px 3px black'
-})
+}))
 
 const FoldoutExpand = MAT.styled('div', {target: 'material-symbols-outlined unselectable'})({
    transform: 'rotate(180deg)',
@@ -205,30 +205,30 @@ export const WindowComponent = (props: { children?: ReactNode[] | ReactNode, lab
     );
 }
 
-const Window = MAT.styled('div')({
+const Window = MAT.styled('div')(({theme})=>({
     display: 'flex',
     flexDirection: 'column',
     position: 'absolute',
     top: '10%',
     left: '10%',
     visibility: 'hidden',
-    border: '1px solid var(--accent-color)',
+    border: `1px solid ${theme.palette.accent.main}`,
     borderRadius: '5px',
     background: 'black',
     overflow: 'hidden',
     alignItems: 'stretch',
     zIndex: 1000,
-})
+}))
 
-const WindowHeader = MAT.styled('div')({
+const WindowHeader = MAT.styled('div')(({theme})=> ({
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
     width: 'calc(100% - 6px)',
     height: '30px',
     padding: '3px',
-    background: 'var(--secondary-color)'
-})
+    background: theme.palette.secondary.main
+}))
 
 const WindowLabel = MAT.styled('div', {target: 'unselectable'})({
     display: 'flex',
@@ -239,81 +239,82 @@ const WindowLabel = MAT.styled('div', {target: 'unselectable'})({
     textWrap: 'nowrap',
 })
 
-const WindowContainer = MAT.styled('div')({
+const WindowContainer = MAT.styled('div')(({theme})=> ({
    display: 'flex',
    flexDirection: 'column',
    boxSizing: 'border-box',
    minWidth: '250px',
    maxHeight: '80vh',
    padding: '7px',
-   background: 'var(--primary-color)',
+   background: theme.palette.primary.main,
    overflow: 'hidden overlay',
    resize: 'both', 
 
    '&:empty': {
         padding: '0px'  
    }
-})
+}))
 
 //#endregion
 
-export const IconButton = MAT.styled(MAT.IconButton, {target: 'material-symbols-outlined'})({
-   color: '#ffffff',
+export const IconButton = MAT.styled(MAT.IconButton, {target: 'material-symbols-outlined'})(({theme})=>({
+   color: theme.palette.text.primary,
    height: 'auto',
    padding: '5px',
    fontSize: '20px !important',
    borderRadius: '5px',
-   backgroundColor: '#343434',
-   boxShadow: '1px 1px 3px 0px #202020',
-   border: '1px solid rgba(0, 0, 0, 0.12)'
-})
+   backgroundColor: theme.palette.secondary.main,
+   boxShadow: `1px 1px 3px 0px ${theme.palette.secondary.dark}`,
+   border: `1px solid ${theme.palette.secondary.light}`,
+}))
 
-export const BigButton = MAT.styled(MAT.Button)({
+export const BigButton = MAT.styled(MAT.Button)(({theme})=> ({
+    color: theme.palette.text.primary,
     width: 'calc(100% - 10px)',
     height: '20px',
     padding: '5px',
-    backgroundColor: 'var(--secondary-color)',
+    backgroundColor: theme.palette.secondary.main,
     boxSizing: 'content-box',
-    border: '1px solid var(--highlight-color)'
-})
+    border: `1px solid ${theme.palette.secondary.light}`
+}))
 
-export const ToggleButton = MAT.styled(MAT.ToggleButton, {target: 'material-symbols-outlined'})({
-    color: 'white',
+export const ToggleButton = MAT.styled(MAT.ToggleButton, {target: 'material-symbols-outlined'})(({theme})=>({
+    color: theme.palette.secondary.contrastText,
     height: 'auto',
     padding: '5px',
     fontSize: '20px !important',
-    backgroundColor: '#343434',
-    boxShadow: '1px 1px 3px 0px #202020',
-    border: '1px solid rgba(0, 0, 0, 0.12)',
+    backgroundColor: theme.palette.secondary.main,
+    boxShadow: `1px 1px 3px 0px ${theme.palette.secondary.dark}`,
+    border: `1px solid ${theme.palette.secondary.light}`,
    
     '&.Mui-selected': {
-        color: 'black',
-        backgroundColor: '#efefef',
+        color: theme.palette.secondary.main,
+        backgroundColor: theme.palette.secondary.contrastText,
 
         '&:hover': {
-            backgroundColor: '#cdcdcd'
+            backgroundColor: theme.palette.secondary.light,
         }
     },
     
     '&:hover': {
-        backgroundColor: '#292929',
+        backgroundColor: theme.palette.secondary.light
     }
-})
+}))
 
-export const ColorInput = MAT.styled('input')({
+export const ColorInput = MAT.styled('input')(({theme}) => ({
     aspectRatio: 1,
     width: 'unset',
     background: 'unset',
     outline: '0',
     appearance: 'none',
-    border: 0,
-    backgroundColor: '#343434',
+    border: `1px solid ${theme.palette.secondary.light}`,
+    backgroundColor: theme.palette.secondary.main,
     boxSizing: 'content-box',
     padding: '5px',
     margin: '2px',
     borderRadius: '5px',
     height: '20px',
-    boxShadow: '1px 1px 3px 0px #202020',
+    boxShadow: `1px 1px 3px 0px ${theme.palette.secondary.dark}`,
 
     '&::-webkit-color-swatch-wrapper': {
         padding: '0'
@@ -321,12 +322,12 @@ export const ColorInput = MAT.styled('input')({
 
     '&::-webkit-color-swatch': {
         borderRadius: '5px',
-        border: '1px solid white',
+        border: `1px solid ${theme.palette.text.primary}`,
     }
-});
+}));
 
-export const SelectInput = MAT.styled(MAT.Select)({
-    backgroundColor: 'var(--secondary-color)',
+export const SelectInput = MAT.styled(MAT.Select)(({theme})=> ({
+    backgroundColor: theme.palette.secondary.main,
     color: 'white',
 
     '.MuiSelect-icon': {
@@ -337,17 +338,18 @@ export const SelectInput = MAT.styled(MAT.Select)({
         paddingBottom: '4px',
         paddingTop: '24px'
     }
-})
+}))
 
 export const SelectLabel = MAT.styled(MAT.InputLabel)({
     color: '#909090'
 })
 
-const Slider = MAT.styled(MAT.Slider)({
+const Slider = MAT.styled(MAT.Slider)(({theme})=>({
     overflow: 'unset',
     margin: '20px 25px 5px 25px',
-    width: 'auto'
-})
+    width: 'auto',
+    color: theme.palette.text.primary,
+}))
 
 const SliderContainer = MAT.styled('div')({
     display: 'flex',
@@ -355,14 +357,14 @@ const SliderContainer = MAT.styled('div')({
     position: 'relative'
 });
 
-const SliderLabel = MAT.styled('div')({
+const SliderLabel = MAT.styled('div')(({theme})=> ({
     position: 'absolute',
     fontSize: '13px',
-    color: 'rgba(255,255,255, .5)',
-    backgroundColor: 'var(--secondary-color)',
+    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.secondary.main,
     top: '5px',
     left: '15px'
-})
+}))
 
 export const SliderComponent = (props: {label:string, defaultValue?:number, min?:number, max?:number, step?: number, onChange?:(event: Event, value: number)=>void})=>{
     const handleSliderChange = (e: Event, v: number) => {
@@ -377,16 +379,20 @@ export const SliderComponent = (props: {label:string, defaultValue?:number, min?
     )
 }
 
-export const Checkbox = MAT.styled(MAT.Checkbox)({
-    backgroundColor: '#343434',
+export const Checkbox = MAT.styled(MAT.Checkbox)(({theme})=> ({
+    backgroundColor: theme.palette.secondary.main,
     borderRadius: '5px',
     padding: '5px',
     height: '20px',
     width: '20px',
     boxSizing: 'content-box',
-    border: '1px solid rgba(0,0,0, 0.12)',
-    boxShadow: '1px 1px 3px 0px #202020'
-})
+    border: `1px solid ${theme.palette.secondary.light}`,
+    boxShadow: '1px 1px 3px 0px #202020',
+
+    '&.Mui-checked': {
+        color: theme.palette.secondary.contrastText,
+    }
+}))
 
 export const CheckboxLabel = MAT.styled('div')({
     marginRight: 'auto'

@@ -43,7 +43,7 @@ const SettingsComponent = () => {
     return (
         <Settings label={'Settings'} root={rootRef} container={containerRef}>
             <Stack spacing={.5}>
-                <FoldoutComponent name='Camera' sx={{border: '1px solid var(--highlight-color)'}}>
+                <FoldoutComponent name='Camera'  sx={{border: '1px solid', borderColor: 'secondary.light'}}>
                     <FormControl variant="filled" fullWidth>
                         <SelectLabel id='projection-label'>Projection</SelectLabel>
                         <SelectInput labelId='projection-label' label='Projection' value={projection} onChange={changeProjection}>
@@ -60,7 +60,7 @@ const SettingsComponent = () => {
                     </FormControl>
                 </FoldoutComponent>
     
-                <FoldoutComponent name='Graphics' sx={{border: '1px solid var(--highlight-color)'}}>
+                <FoldoutComponent name='Graphics' sx={{border: '1px solid', borderColor: 'secondary.light'}}>
                     <SliderComponent label='Culler Threshold' min={0} max={50} onChange={changeCullerThreshold}/>
 
                     <FoldoutComponent name='Post Production'>

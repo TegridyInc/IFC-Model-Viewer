@@ -211,7 +211,7 @@ const TypeFoldout = (props: {typeData: TypeData, ifcModel: IFCModel}) => {
     }
 
     return (
-        <FoldoutComponent sx={{border: '1px solid var(--highlight-color)'}} onClosed={async ()=> {setOpenState(false)}} onOpen={async ()=> {setOpenState(true)}} key={name} name={name} header={
+        <FoldoutComponent sx={{border: '1px solid', borderColor: 'secondary.light'}} onClosed={async ()=> {setOpenState(false)}} onOpen={async ()=> {setOpenState(true)}} key={name} name={name} header={
             <Stack sx={{marginLeft: 'auto', alignItems: 'center', marginRight: '5px'}} spacing={.5} direction={'row'}>
                 <Tooltip title='Highlight Color'>
                     <ColorInput type="color" className='color-input' defaultValue={'#'+highlightColor.getHexString()} onChange={changeHighlightColor}/>
