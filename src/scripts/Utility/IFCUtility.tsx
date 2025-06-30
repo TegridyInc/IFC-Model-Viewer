@@ -10,6 +10,7 @@ export function ModelFoldouts(props: {sx?:SxProps, property: { [attribute: strin
     const foldouts = [
         <AttributesFoldout ifcModel={props.ifcModel} property={props.property}></AttributesFoldout>,
         <MaterialFoldout ifcModel={props.ifcModel} property={props.property}></MaterialFoldout>,
+        <ClassificationsFoldout ifcModel={props.ifcModel} property={props.property}/>,
         <PropertySetsFoldout ifcModel={props.ifcModel} property={props.property}></PropertySetsFoldout>,
         <SpatialElementFoldout ifcModel={props.ifcModel} property={props.property}></SpatialElementFoldout>,
     ]
@@ -123,6 +124,69 @@ function MaterialFoldout(props: { ifcModel:IFCModel, property: { [attribute: str
     return (
         <FoldoutComponent name={foldoutName.current} onOpen={()=>{setIsOpen(true)}} onClosed={()=>{setIsOpen(false)}}>
             {isOpen ? materials : <></>}
+        </FoldoutComponent>
+    )
+}
+
+const ClassificationsFoldout = (props: { property: { [attribute: string]: any }, ifcModel: IFCModel}) => {
+    const [classifications, setClassifications] = useState(undefined);
+    const [isOpen, setIsOpen] = useState(false);
+    
+    const getClassifications = async ()=>{
+        const relAssociatesClassifications = await props.ifcModel.getAllPropertiesOfType(919958153);
+
+        var elements: any[] = []; 
+        var classificationsFound: string[] = [];
+
+        for (const id in relAssociatesClassifications) {
+            const relAssociatesClassification = relAssociatesClassifications[id];
+            const relatedObjects = relAssociatesClassification.RelatedObjects as any[];
+            
+            const index = classificationsFound.findIndex((value) => value == relAssociatesClassification.Name.value);
+            if(index != -1)
+                continue;
+
+            for(const handle of relatedObjects) {
+                if(handle.value == props.property.expressID) {
+                    const relClassification = await webIFC.properties.getItemProperties(props.ifcModel.ifcID, relAssociatesClassification.RelatingClassification.value)
+                    const classification =  await webIFC.properties.getItemProperties(props.ifcModel.ifcID, relClassification.ReferencedSource.value)
+
+                    elements.push(
+                        relClassification.Name ?
+                        <FoldoutComponent name={classification.Name.value}>
+                            <FoldoutElementComponent label={relClassification.Name.value} value={relClassification.ItemReference.value}/>
+                        </FoldoutComponent> :
+                        <FoldoutComponent name={classification.Name.value}>
+                            <FoldoutElementComponent label={relClassification.ItemReference.value}/>
+                        </FoldoutComponent> 
+                        
+                    )
+
+                    classificationsFound.push(relAssociatesClassification.Name.value)
+                    break;
+                }
+            }
+        }
+
+        setClassifications(elements)
+    }
+
+    
+    const mounted = useRef(false);
+    useEffect(()=>{
+        if(!mounted.current) {
+            mounted.current = true;
+            
+            getClassifications();
+        }
+    }, []);
+    
+
+    return (
+        <FoldoutComponent name='Classifications' onOpen={()=>{setIsOpen(true)}} onClosed={()=>{setIsOpen(false)}}>
+            {
+                isOpen ? classifications : <></>
+            }
         </FoldoutComponent>
     )
 }
