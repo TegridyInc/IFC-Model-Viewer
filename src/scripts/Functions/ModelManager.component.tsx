@@ -1,7 +1,6 @@
 import * as FRA from '@thatopen/fragments'
 import { world, fragmentManager, worlds } from '../Viewer/Components'
 import {IconButton, WindowComponent, ToggleButton, FoldoutComponent, FoldoutElementComponent} from '../Utility/UIUtility.component';
-import {IconButton, WindowComponent, ToggleButton, FoldoutComponent, FoldoutElementComponent} from '../Utility/UIUtility.component';
 import { LoadIFCModel } from '../Viewer/IFCLoader' 
 import {IFCGroup, IFCModel} from '../Viewer/IFC'
 import { useRef, useState, FormEvent, useEffect, MouseEvent } from 'react';
@@ -143,7 +142,6 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
 
     const [visible, setVisibilty] = useState(true);
     const [generalIFCData, setGeneralIFCData] = useState(undefined);
-    const [generalIFCData, setGeneralIFCData] = useState(undefined);
 
     const openSpatialStructure = () => ifcModel.dispatcher.dispatchEvent({type: 'onSpatialStructure'})
 
@@ -247,7 +245,6 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
     }, [])
 
     return(
-        <FoldoutComponent name={ifcModel.name} key={props.ifcModel.ifcID} header={
         <FoldoutComponent name={ifcModel.name} key={props.ifcModel.ifcID} header={
             <Stack sx={{alignItems: 'center'}} spacing={.5} direction={'row'}>
                 <Tooltip title='Spatial Structure'>
