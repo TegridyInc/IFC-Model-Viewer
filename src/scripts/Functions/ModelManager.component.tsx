@@ -12,24 +12,6 @@ const ModelManager = styled(WindowComponent)({
     paddingLeft: '5px'
 })
 
-const ModelItem = styled('div')({
-    boxSizing: 'border-box',
-    display: 'flex',
-    alignItems: 'center',
-    flexDirection: 'row',
-    padding: '5px',
-    borderRadius: '5px',
-})
-
-const ModelName = styled('div')({
-    maxWidth: '300px',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    alignContent: 'center',
-    paddingLeft: '5px',
-    marginRight: 'auto',
-})
-
 const ModelManagerComponent = () => {
     const rootRef = useRef<HTMLDivElement>(undefined);
     const containerRef = useRef<HTMLDivElement>(undefined);
