@@ -1,6 +1,6 @@
 import * as FRA from '@thatopen/fragments'
 import { world, fragmentManager, worlds } from '../Viewer/Components'
-import {IconButton, WindowComponent, ToggleButton, FoldoutComponent} from '../Utility/UIUtility.component';
+import {IconButton, WindowComponent, ToggleButton, FoldoutComponent, FoldoutElementComponent} from '../Utility/UIUtility.component';
 import { LoadIFCModel } from '../Viewer/IFCLoader' 
 import {IFCGroup, IFCModel} from '../Viewer/IFC'
 import { useRef, useState, FormEvent, useEffect, MouseEvent } from 'react';
@@ -141,6 +141,7 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
     const model = ifcModel;
 
     const [visible, setVisibilty] = useState(true);
+    const [generalIFCData, setGeneralIFCData] = useState(undefined);
 
     const openSpatialStructure = () => ifcModel.dispatcher.dispatchEvent({type: 'onSpatialStructure'})
 
@@ -176,9 +177,75 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
         model.dispose();
     }
 
+    const getGeneralIFCData = async () => {
+        const elements: any[] = [];
+        
+        const applicationDatas = await props.ifcModel.getAllPropertiesOfType(639542469);
+        var applicationData: any;
+        for(const id in applicationDatas) {
+            applicationData = applicationDatas[id];
+            break;
+        }
+
+        elements.push(
+            <FoldoutComponent name='Application'>
+                <FoldoutElementComponent label='Name' value={applicationData.ApplicationFullName.value}/>
+                <FoldoutElementComponent label='Identifier' value={applicationData.ApplicationIdentifier.value}/>
+                <FoldoutElementComponent label='Version' value={applicationData.Version.value}/>
+            </FoldoutComponent>
+        )
+
+        const organizationElements: any[] = [];
+        const organizationDatas = await props.ifcModel.getAllPropertiesOfType(4251960020);
+        for(const id in organizationDatas) {
+            const organizationData = organizationDatas[id];
+
+            organizationElements.push(
+                <FoldoutComponent name={organizationData.Name.value}>
+                    <FoldoutElementComponent label='Description' value={organizationData.Description != null ? organizationData.Description.value : ''}/>
+                </FoldoutComponent>
+            )
+        }
+        
+        elements.push(
+            <FoldoutComponent name='Organizations'>
+                {organizationElements}
+            </FoldoutComponent>
+        )
+
+        const classificationElements: any[] = [];
+        const classificationsData = await props.ifcModel.getAllPropertiesOfType(747523909);
+
+        for(const id in classificationsData) {
+            const classificationData = classificationsData[id] as any;
+            classificationElements.push(
+                <FoldoutComponent name={classificationData.Name.value}>
+                    <FoldoutElementComponent label='Edition' value={classificationData.Edition.value}/>
+                    <FoldoutElementComponent label='Source' value={classificationData.Source.value}/>
+                </FoldoutComponent>
+            )
+        }
+
+        elements.push(
+            <FoldoutComponent name='Classifications'>
+                {classificationElements}
+            </FoldoutComponent>
+        )
+        
+        setGeneralIFCData(elements);
+    }
+
+    const mounted = useRef(false);
+    useEffect(()=>{
+        if(!mounted.current) {
+            mounted.current = true;
+
+            getGeneralIFCData();
+        }
+    }, [])
+
     return(
-        <ModelItem key={props.ifcModel.ifcID}>
-            <ModelName>{ifcModel.name}</ModelName>
+        <FoldoutComponent name={ifcModel.name} key={props.ifcModel.ifcID} header={
             <Stack sx={{alignItems: 'center'}} spacing={.5} direction={'row'}>
                 <Tooltip title='Spatial Structure'>
                     <IconButton onClick={openSpatialStructure}>package_2</IconButton>
@@ -196,7 +263,13 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
                     <IconButton onClick={deleteModel}>delete</IconButton>
                 </Tooltip>
             </Stack>
-        </ModelItem>
+        }>  
+            <FoldoutComponent name='General'>
+                <FoldoutElementComponent label='Description' value={props.ifcModel.ifcMetadata.description}/>
+                <FoldoutElementComponent label='Schema' value={props.ifcModel.ifcMetadata.schema}/>
+            </FoldoutComponent>
+            {generalIFCData}
+        </FoldoutComponent>
     )
 }
 
