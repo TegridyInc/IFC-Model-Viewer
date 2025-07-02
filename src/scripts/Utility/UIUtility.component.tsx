@@ -1,3 +1,4 @@
+import { Range } from './Settings'
 import { JSX } from 'react/jsx-runtime';
 import { useState, useRef, MouseEvent, ReactNode, RefObject, MouseEventHandler, useEffect } from 'react';
 import * as MAT from '@mui/material'
@@ -366,15 +367,19 @@ const SliderLabel = MAT.styled('div')(({theme})=> ({
     left: '15px'
 }))
 
-export const SliderComponent = (props: {label:string, defaultValue?:number, min?:number, max?:number, step?: number, onChange?:(event: Event, value: number)=>void})=>{
+export const SliderComponent = (props: {label:string, range?: Range, step?: number, onChange?:(event: Event, value: number)=>void})=>{
     const handleSliderChange = (e: Event, v: number) => {
-        props.onChange(e, v)
+        if(props.range)
+            props.range.value = v;
+
+        if(props.onChange)
+            props.onChange(e, v)
     }
 
     return (
         <SliderContainer>
             <SliderLabel>{props.label}</SliderLabel>
-            <Slider defaultValue={props.defaultValue} min={props.min} max={props.max} step={props.step} onChange={handleSliderChange} valueLabelDisplay='auto'/>
+            <Slider defaultValue={props.range.value.valueOf()} min={props.range.min} max={props.range.max} step={props.step} onChange={handleSliderChange} valueLabelDisplay='auto'/>
         </SliderContainer>
     )
 }

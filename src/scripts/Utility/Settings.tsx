@@ -3,11 +3,131 @@ import { useState, useRef, useEffect } from 'react';
 import { world, culler, postproduction, ambientOclussion } from '../Viewer/Components'
 import { styled, MenuItem, SelectChangeEvent, Stack, FormControl } from '@mui/material';
 
+export type Range = {
+    max: number;
+    min: number;
+    value: number;
+}
+
+export type SettingsPreset = {
+    projection: 'perspective' | 'orthographic';
+    navigation: 'orbit' | 'first-person';
+    cullerThreshold: Range;
+    postProduction: {
+        ao: {
+            enabled: boolean;
+            halfResolution: boolean;
+            screenSpaceRadius: boolean;
+            samples: Range;
+            denoiseSamples: Range;
+            denoiseRadius: Range;
+            aoRadius: Range;
+            distanceFalloff: Range;
+            intensity: Range;
+        }
+        lineEffect: {
+            enabled: boolean;
+            gammaCorrection: boolean;
+            opacity: Range;
+            tolerance: Range;
+        }
+        glossEffect: {
+            enabled: boolean;
+            glossExponent: Range;
+            maxGloss: Range;
+            minGloss: Range;
+        }
+    }
+}
+
+const defaultPreset = ():SettingsPreset => {
+    return {
+        projection: 'perspective',
+        navigation: 'orbit',
+        cullerThreshold: {
+            min: 0,
+            value: 0,
+            max: 50
+        },
+        postProduction: {
+            ao: {
+                enabled: false,
+                halfResolution: false,
+                screenSpaceRadius: false,
+                samples: {
+                    min: 1,
+                    value: 8,
+                    max: 16
+                },
+                denoiseSamples: {
+                    min: 1,
+                    value: 8,
+                    max: 16
+                },
+                denoiseRadius: {
+                    min: 0,
+                    value: 50,
+                    max: 100
+                },
+                aoRadius: {
+                    min: 0,
+                    value: 2,
+                    max: 16
+                },
+                distanceFalloff: {
+                    min: 0,
+                    value: 4,
+                    max: 16
+                },
+                intensity: {
+                    min: 0,
+                    value: 2,
+                    max: 16
+                },
+            },
+            lineEffect: {
+                enabled: false,
+                gammaCorrection: true,
+                opacity: {
+                    min: 0,
+                    value: 0,
+                    max: 1
+                },
+                tolerance: {
+                    min: 0,
+                    value: 0,
+                    max: 6
+                }
+            },
+            glossEffect: {
+                enabled: false,
+                glossExponent: {
+                    min:0,
+                    value: 1.9,
+                    max: 5
+                },
+                maxGloss:  {
+                    min: -2,
+                    value: .1,
+                    max: 2
+                },
+                minGloss:  {
+                    min: -2,
+                    value: -.1,
+                    max: 2
+                }
+            }
+        }
+    }
+}
+
 const Settings = styled(WindowComponent)();
 
-const SettingsComponent = () => {
+const SettingsComponent = () => {    
     const [projection, setProjection] = useState(0)
     const [navigation, setNavigation] = useState(0)
+    
+    const [preset, setPreset] = useState(defaultPreset());
 
     const rootRef = useRef<HTMLDivElement>(undefined);
     const containerRef = useRef<HTMLDivElement>(undefined);
@@ -27,17 +147,53 @@ const SettingsComponent = () => {
 
     const changeProjection = (e: SelectChangeEvent<number>)=>{
         world.camera.projection.set(e.target.value ? 'Orthographic' : 'Perspective')
+        
         setProjection(e.target.value as number)
+        setPreset(oldPreset => {
+            oldPreset.projection = projection == 0 ? 'perspective' : 'orthographic'
+            return oldPreset;
+        })
     }
 
     const changeNavigation = (e: SelectChangeEvent<number>)=>{
         world.camera.set(e.target.value ? 'FirstPerson' : 'Orbit');
+        
         setNavigation(e.target.value as number)
+        setPreset(oldPreset => {
+            oldPreset.navigation = navigation == 0 ? 'orbit' : 'first-person'
+            return oldPreset;
+        })
     }
 
-    const changeCullerThreshold = (e: Event, value: number) => {
-        culler.config.threshold = value
+    const updateCullerThreshold = () => {
+        culler.config.threshold = preset.cullerThreshold.value;
         culler.needsUpdate = true
+    }
+
+    const updateAmbientOcclusion = () => {
+        postproduction.setPasses({ao: preset.postProduction.ao.enabled})
+        ambientOclussion.halfRes = preset.postProduction.ao.halfResolution;
+        ambientOclussion.screenSpaceRadius = preset.postProduction.ao.screenSpaceRadius;
+        ambientOclussion.aoSamples = preset.postProduction.ao.samples.value;  
+        ambientOclussion.denoiseSamples = preset.postProduction.ao.denoiseSamples.value;  
+        ambientOclussion.denoiseRadius = preset.postProduction.ao.denoiseRadius.value;  
+        ambientOclussion.aoRadius = preset.postProduction.ao.aoRadius.value;  
+        ambientOclussion.distanceFalloff = preset.postProduction.ao.distanceFalloff.value;  
+        ambientOclussion.intensity = preset.postProduction.ao.intensity.value;  
+    }
+
+    const updateLineEffect = () => {
+        postproduction.setPasses({ custom: preset.postProduction.lineEffect.enabled })
+        postproduction.setPasses({ gamma: preset.postProduction.lineEffect.gammaCorrection && preset.postProduction.lineEffect.enabled })
+        postproduction.customEffects.opacity = preset.postProduction.lineEffect.opacity.value;
+        postproduction.customEffects.tolerance = preset.postProduction.lineEffect.tolerance.value;
+    }
+
+    const updateGlossEffect = () => {
+        postproduction.customEffects.glossEnabled = preset.postProduction.glossEffect.enabled;
+        postproduction.customEffects.glossExponent = preset.postProduction.glossEffect.glossExponent.value;
+        postproduction.customEffects.minGloss = preset.postProduction.glossEffect.minGloss.value;
+        postproduction.customEffects.maxGloss = preset.postProduction.glossEffect.maxGloss.value;
     }
 
     return (
@@ -61,38 +217,43 @@ const SettingsComponent = () => {
                 </FoldoutComponent>
     
                 <FoldoutComponent name='Graphics' sx={{border: '1px solid', borderColor: 'secondary.light'}}>
-                    <SliderComponent label='Culler Threshold' min={0} max={50} onChange={changeCullerThreshold}/>
+                    <SliderComponent label='Culler Threshold' range={preset.cullerThreshold}  onChange={updateCullerThreshold}/>
 
                     <FoldoutComponent name='Post Production'>
-                        <FoldoutComponent name='Ambient Oclussion' header={<Checkbox onChange={(e, v) => postproduction.setPasses({ ao: v })}/>}>
+                        <FoldoutComponent name='Ambient Oclussion' header={
+                            <Checkbox defaultChecked={preset.postProduction.ao.enabled} onChange={(e, v) => {preset.postProduction.ao.enabled = v; updateAmbientOcclusion()}}/>
+                        }>
                             <CheckboxContainer>
                                 <CheckboxLabel>Half Resolution</CheckboxLabel>
-                                <Checkbox onChange={(e, v) => ambientOclussion.halfRes = v}></Checkbox>
+                                <Checkbox defaultChecked={preset.postProduction.ao.halfResolution} onChange={(e, v) => {preset.postProduction.ao.halfResolution = v; updateAmbientOcclusion()}}/>
                             </CheckboxContainer>
                             <CheckboxContainer>
                                 <CheckboxLabel>Screen Space Radius</CheckboxLabel>
-                                <Checkbox onChange={(e, v) => ambientOclussion.screenSpaceRadius = v}></Checkbox>
+                                <Checkbox defaultChecked={preset.postProduction.ao.screenSpaceRadius} onChange={(e, v) => {preset.postProduction.ao.screenSpaceRadius = v; updateAmbientOcclusion()}}/>
                             </CheckboxContainer>
-                            <SliderComponent label='Samples' defaultValue={8} min={1} max={16} onChange={(e, v) => ambientOclussion.aoSamples = v}/>
-                            <SliderComponent label='Denoise Samples' defaultValue={8} min={1} max={16} onChange={(e, v) => ambientOclussion.denoiseSamples = v}/>
-                            <SliderComponent label='Denoise Radius' defaultValue={50} min={0} max={100} onChange={(e, v) => ambientOclussion.denoiseRadius = v}/>
-                            <SliderComponent label='AO Radius' defaultValue={2} min={0} max={16} onChange={(e, v) => ambientOclussion.aoRadius = v}/>
-                            <SliderComponent label='Distance Falloff' defaultValue={4} min={0} max={16} onChange={(e, v) => ambientOclussion.distanceFalloff = v}/>
-                            <SliderComponent label='Intensity' defaultValue={2} min={0} max={16} onChange={(e, v) => ambientOclussion.intensity = v}/>
+                            <SliderComponent label='Samples'          onChange={updateAmbientOcclusion} range={preset.postProduction.ao.samples}/>
+                            <SliderComponent label='Denoise Samples'  onChange={updateAmbientOcclusion} range={preset.postProduction.ao.denoiseSamples}/>
+                            <SliderComponent label='Denoise Radius'   onChange={updateAmbientOcclusion} range={preset.postProduction.ao.denoiseRadius}/>
+                            <SliderComponent label='AO Radius'        onChange={updateAmbientOcclusion} range={preset.postProduction.ao.aoRadius}/>
+                            <SliderComponent label='Distance Falloff' onChange={updateAmbientOcclusion} range={preset.postProduction.ao.distanceFalloff}/>
+                            <SliderComponent label='Intensity'        onChange={updateAmbientOcclusion} range={preset.postProduction.ao.intensity}/>
                         </FoldoutComponent>
-                        <FoldoutComponent name='Line Edges' header={<Checkbox onChange={(e, v)=> postproduction.setPasses({ custom: v })}/>}>
+                        <FoldoutComponent name='Line Edges' header={
+                            <Checkbox onChange={(e, v)=>{preset.postProduction.lineEffect.enabled = v; updateLineEffect()}} defaultChecked={preset.postProduction.lineEffect.enabled}/>
+                        }>
                             <CheckboxContainer>
                                 <CheckboxLabel>Gamma Correction</CheckboxLabel>
-                                <Checkbox onChange={(e, v) => postproduction.setPasses({ gamma: v })}></Checkbox>
+                                <Checkbox onChange={(e, v)=>{preset.postProduction.lineEffect.gammaCorrection = v; updateLineEffect()}} defaultChecked={preset.postProduction.lineEffect.gammaCorrection}></Checkbox>
                             </CheckboxContainer>
-                            <SliderComponent label='Opacity' step={.01} min={0} max={1} onChange={(e, v)=>postproduction.customEffects.opacity = v}/>
-                            <SliderComponent label='Tolarance' step={.1} min={0} max={6} onChange={(e, v)=> postproduction.customEffects.tolerance = v}/>
+                            <SliderComponent onChange={updateLineEffect} label='Opacity'   step={.01} range={preset.postProduction.lineEffect.opacity}/>
+                            <SliderComponent onChange={updateLineEffect} label='Tolarance' step={.1}  range={preset.postProduction.lineEffect.tolerance}/>
                         </FoldoutComponent>
-                        <FoldoutComponent name='Gloss' header={<Checkbox onChange={(e, v)=> postproduction.customEffects.glossEnabled = v}/>}>
-                            <SliderComponent label='Gloss Exponent' defaultValue={1.9} step={.1} min={0} max={5} onChange={(e, v) => postproduction.customEffects.glossExponent = v}/>
-                            <SliderComponent label='Max Gloss' defaultValue={.1} step={.1} min={-2} max={2} onChange={(e, v) => postproduction.customEffects.maxGloss = v}/>
-                            <SliderComponent label='Min Gloss' defaultValue={-.1} step={.1} min={-2} max={2} onChange={(e, v) => postproduction.customEffects.minGloss = v}/>
-
+                        <FoldoutComponent name='Gloss' header={
+                            <Checkbox onChange={(e, v)=>{preset.postProduction.glossEffect.enabled = v; updateGlossEffect()}} defaultChecked={preset.postProduction.glossEffect.enabled}/>
+                        }>
+                            <SliderComponent onChange={updateGlossEffect} label='Gloss Exponent' step={.1} range={preset.postProduction.glossEffect.glossExponent} />
+                            <SliderComponent onChange={updateGlossEffect} label='Max Gloss'      step={.1} range={preset.postProduction.glossEffect.maxGloss}/>
+                            <SliderComponent onChange={updateGlossEffect} label='Min Gloss'      step={.1} range={preset.postProduction.glossEffect.minGloss}/>
                         </FoldoutComponent>
                     </FoldoutComponent>
                 </FoldoutComponent>
@@ -102,3 +263,4 @@ const SettingsComponent = () => {
 }
 
 export default SettingsComponent;
+
