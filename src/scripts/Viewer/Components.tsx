@@ -23,6 +23,7 @@ export const plans = components.get(OBF.Plans);
 export const indexer = components.get(COM.IfcRelationsIndexer)
 export const exploder = components.get(COM.Exploder);
 export const classifier = components.get(COM.Classifier);
+export const edges = components.get(OBF.ClipEdges);
 
 export var postproduction: OBF.Postproduction;
 export var ambientOclussion: any;
@@ -46,7 +47,7 @@ const Container = styled('div')<{fullscreen: boolean}>(({fullscreen}) => ({
 }))
 
 
-export default function ContainerComponent() {
+export default function ContainerComponent(props: {children?:any}) {
     const mounted = useRef(false);
     const context = viewportContext();
 
@@ -62,7 +63,7 @@ export default function ContainerComponent() {
         }
     }, [])
 
-    return <Container id='container' fullscreen={context.fullscreen}></Container>
+    return <Container id='container' fullscreen={context.fullscreen}>{props.children}</Container>
 
     function InitializeComponents() {
         components.init();
@@ -92,6 +93,7 @@ export default function ContainerComponent() {
         culler.config.height = 350;
     
         plans.world = world;
+        edges.fillsNeedUpdate = true;
     
         ifcloader.setup();
     

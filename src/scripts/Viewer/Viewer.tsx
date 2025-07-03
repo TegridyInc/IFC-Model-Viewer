@@ -48,6 +48,17 @@ await webIFC.Init();
 
 global.onViewportLoaded = new CustomEvent('onViewportLoaded');
 
+var onCustomViewEnabled: CustomEvent<string>;
+export function EnableCustomView(label: string) {
+    onCustomViewEnabled = new CustomEvent('onCustomViewEnabled', {detail: label})
+    document.dispatchEvent(onCustomViewEnabled)
+}
+
+const onCustomViewDisabled = new CustomEvent('onCustomViewDisabled');
+export function DisableCustomView() {
+    document.dispatchEvent(onCustomViewDisabled)
+}
+
 const Viewport = styled('div')<{fullscreen: boolean, minimized: boolean}>(({theme, fullscreen, minimized})=>({
     display: minimized ? 'none' : 'flex',
     alignItems: 'center',
@@ -62,6 +73,26 @@ const Viewport = styled('div')<{fullscreen: boolean, minimized: boolean}>(({them
     border: `0px solid ${theme.palette.accent.main}`,
     borderWidth: fullscreen ? '0px' : '2px',
     borderRadius: fullscreen ? '0px' : '5px',
+}))
+
+const CustomViewportView = styled('div')(({theme})=>({
+    height: '-webkit-fill-available',
+    width: '100%',
+    boxShadow: 'inset 0px 0px 18px 1px black',
+    position: 'absolute',
+    pointerEvents: 'none'
+}))
+
+const CustomViewportViewLabel = styled('div')(({theme})=>({
+    pointerEvents: 'none',
+    position: 'absolute',
+    top: '20px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    textTransform: 'uppercase',
+    fontWeight: 'bold',
+    fontSize: 'small',
+    color: 'black'
 }))
 
 const ViewportMinimized = styled(BigButton)<{minimized: boolean}>(({minimized}) => ({
@@ -109,7 +140,10 @@ const ViewporContext = createContext<ViewportContext>({fullscreen: false, minimi
 export const viewportContext = () => useContext(ViewporContext);
 
 export default function Viewer() {
-    const viewportRef = useRef<HTMLDivElement>(undefined)
+    const viewportRef = useRef<HTMLDivElement>(undefined);
+    
+    const [customView, setCustomView] = useState(false);
+    const [customViewLabel, setCustomViewLabel] = useState('Custom View');
     const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
     const [isMinimized, setIsMinimized] = useState<boolean>(false);
 
@@ -180,7 +214,18 @@ export default function Viewer() {
                 debugFrame.style.visibility = 'hidden';
                 stats.dom.style.visibility = 'hidden';
             })
+
+            document.addEventListener('onCustomViewEnabled', (e: CustomEvent<string>)=>{
+                setCustomView(true)
+                setCustomViewLabel(e.detail)
+            })
+
+            document.addEventListener('onCustomViewDisabled', ()=>{
+                setCustomView(false);
+                setCustomViewLabel('Custom View');
+            })
         }
+
     }, []) 
 
     return (     
@@ -194,7 +239,11 @@ export default function Viewer() {
                         <ViewportButton onClick={closeViewport}>close</ViewportButton>
                     </ViewportButtonContainer>
                 </ViewportLabel>
-                <Container/>
+                <Container>
+                    <CustomViewportView hidden={!customView}>
+                        <CustomViewportViewLabel>{customViewLabel}</CustomViewportViewLabel>
+                    </CustomViewportView>
+                </Container>
                 <Docker isLeftDocker={false}/>
                 <Docker isLeftDocker={true}/>
                 <ToolBar/>
