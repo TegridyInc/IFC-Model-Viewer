@@ -170,6 +170,9 @@ const TypeFoldout = (props: {typeData: TypeData, ifcModel: IFCModel}) => {
         if (color)
             color.set(rgb.r, rgb.g, rgb.b);
 
+        if(highlighted)
+            highlighter.highlightByID(name, props.typeData.fragmentIDMap, true)
+
         setHighlightColor(color);
         typeState.get(props.ifcModel.ifcID).set(props.typeData.type, { isVisible: visible, isHighlighted: highlighted, highlightColor: color });
     }
