@@ -3,7 +3,7 @@ import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { StyledEngineProvider } from '@mui/material/styles';
 import Viewer from './scripts/Viewer/Viewer';
-import { ThemeProvider, useColorScheme, useMediaQuery } from '@mui/material'
+import { styled, ThemeProvider, useColorScheme, useMediaQuery } from '@mui/material'
 import { createTheme } from '@mui/material/styles';
 
 declare module '@mui/material/styles' {
@@ -38,10 +38,11 @@ export const theme = createTheme({
     light: {
       palette: {
         primary: {
-          main: '#a3a3a3',
+          main: '#aaaaaa',
         },
         secondary: {
-          main: '#b8b8b8',
+          main: '#d8d8d8',
+          light: '#fbfbfb',
         },
         accent: {
           main: '#0a93c4',
@@ -53,7 +54,7 @@ export const theme = createTheme({
       
     }
   },
-  
+
   typography: {
     fontFamily: [
       'Arial',
@@ -62,13 +63,27 @@ export const theme = createTheme({
   }
 });
 
+const Root = styled('div')(({theme})=>({
+  color: theme.palette.text.primary,
+  width: '100%',
+  height: '100%',
+  margin: '0px',
+  display: 'flex',
+  overflow: 'hidden',
+  backgroundColor: theme.palette.primary.dark,
+  fontFamily: 'Arial, sans-serif',
+  flexDirection: 'column',
+}))
+
 const App = () => {
     const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
     return (
-        <ThemeProvider theme={theme} colorSchemeStorageKey={prefersDarkMode ? 'dark' : 'light'}>
-            <Viewer/>
-        </ThemeProvider>
+      <ThemeProvider theme={theme} colorSchemeStorageKey={prefersDarkMode ? 'dark' : 'light'}>
+        <Root>
+          <Viewer/>
+        </Root>
+      </ThemeProvider>
     )
 }
 

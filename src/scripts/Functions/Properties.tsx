@@ -67,7 +67,7 @@ export default function Properties() {
                     const property = await webIFC.properties.getItemProperties(value.ifcModel.ifcID, value.fragmentID);
                     
                     return (
-                        <ModelFoldouts sx={{border: '1px solid var(--highlight-color)'}} ifcModel={value.ifcModel}  property={property}></ModelFoldouts>
+                        <ModelFoldouts sx={{border: '1px solid', borderColor: 'secondary.light'}} ifcModel={value.ifcModel}  property={property}></ModelFoldouts>
                     )
                 }))
 

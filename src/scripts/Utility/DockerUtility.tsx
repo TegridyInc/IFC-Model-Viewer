@@ -12,7 +12,7 @@ const Docker = styled('div')<{ fullscreen: boolean, leftDocker: boolean, open: b
     top: fullscreen ? 'calc(50% + 18.5px)' : '50%',
     backgroundColor: theme.palette.primary.main,
     border: `0px solid ${theme.palette.secondary.light}`,
-    borderWidth: open ? ((fullscreen && leftDocker) || (!fullscreen && !leftDocker) ? '2px 2px 2px 0px' : '2px 0px 2px 2px') : '0px',
+    borderWidth: open ? ((fullscreen && leftDocker) || (!fullscreen && !leftDocker) ? '1px 1px 1px 0px' : '1px 0px 1px 1px') : '0px',
     borderRadius: (fullscreen && leftDocker) || (!fullscreen && !leftDocker) ? '0px 5px 5px 0px' : '5px 0px 0px 5px' ,
     transform:'translateY(-50%)',
 
@@ -44,7 +44,7 @@ const DockerTabs = styled(Tabs)({
 
 const DockerTab = styled(Tab)(({theme})=>({
     fontWeight: 'bold',
-    backgroundColor: '#212121',
+    backgroundColor: theme.palette.primary.dark,
     color: theme.palette.secondary.light,
     minHeight: 'unset',
     

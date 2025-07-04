@@ -108,7 +108,7 @@ const ViewportMinimized = styled(BigButton)<{minimized: boolean}>(({minimized}) 
 
 const ViewportLabel = styled('div')<{fullscreen: boolean}>(({fullscreen, theme}) => ({
     position: 'relative',
-    backgroundColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.secondary.main,
     padding: '10px 5px',
     width: '100%',
     textAlign: 'center',

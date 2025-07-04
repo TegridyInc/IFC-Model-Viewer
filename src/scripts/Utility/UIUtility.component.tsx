@@ -74,11 +74,6 @@ const FoldoutLabelInput = MAT.styled(MAT.TextField)({
     marginRight: 'auto',
     fontWeight: '300',
     overflow: 'hidden',
-    color: 'white',
-
-    '*': {
-        color: 'white !important'
-    }
 })
 
 const FoldoutContainer = MAT.styled(MAT.Collapse)(({theme})=> ({
@@ -86,7 +81,7 @@ const FoldoutContainer = MAT.styled(MAT.Collapse)(({theme})=> ({
     transition: 'height 0.1s',
     border: `1px solid ${theme.palette.secondary.light}`,
     borderRadius: '5px',
-    boxShadow: '1px 1px 3px black'
+    boxShadow: `1px 1px 3px ${theme.palette.primary.dark}`
 }))
 
 const FoldoutExpand = MAT.styled('div', {target: 'material-symbols-outlined unselectable'})({
@@ -280,25 +275,25 @@ export const BigButton = MAT.styled(MAT.Button)(({theme})=> ({
 }))
 
 export const ToggleButton = MAT.styled(MAT.ToggleButton, {target: 'material-symbols-outlined'})(({theme})=>({
-    color: theme.palette.secondary.contrastText,
+    color: theme.palette.secondary.light,
     height: 'auto',
     padding: '5px',
+    backgroundColor: theme.palette.primary.dark,
     fontSize: '20px !important',
-    backgroundColor: theme.palette.secondary.main,
     boxShadow: `1px 1px 3px 0px ${theme.palette.secondary.dark}`,
     border: `1px solid ${theme.palette.secondary.light}`,
-   
+    
     '&.Mui-selected': {
-        color: theme.palette.secondary.main,
-        backgroundColor: theme.palette.secondary.contrastText,
+        color: theme.palette.secondary.contrastText,
+        backgroundColor: theme.palette.secondary.main,
 
         '&:hover': {
-            backgroundColor: theme.palette.secondary.light,
+            backgroundColor: theme.palette.secondary.light
         }
     },
-    
+
     '&:hover': {
-        backgroundColor: theme.palette.secondary.light
+        backgroundColor: theme.palette.primary.main,
     }
 }))
 
@@ -329,7 +324,7 @@ export const ColorInput = MAT.styled('input')(({theme}) => ({
 
 export const SelectInput = MAT.styled(MAT.Select)(({theme})=> ({
     backgroundColor: theme.palette.secondary.main,
-    color: 'white',
+    color: theme.palette.text.primary,
 
     '.MuiSelect-icon': {
         fill: 'rgb(255 255 255 / 36%)'
