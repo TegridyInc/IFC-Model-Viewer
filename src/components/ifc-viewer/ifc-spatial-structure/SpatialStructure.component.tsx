@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
-import {FoldoutComponent, WindowComponent, FoldoutElementComponent} from '../Utility/UIUtility.component'
-import {IFCDispatcher, IFCModel } from '../Viewer/IFC'
+import Window from '@pim_platform/components/ifc-viewer/window/Window.component'
+import Foldout from '../foldout/Foldout.component'
+import FoldoutElement from '../foldout/FoldoutElement.component';
+
+import {IFCDispatcher, IFCModel } from '../IFC'
 
 var openModel: IFCModel;
 
@@ -14,17 +17,17 @@ const SpatialStructureElement = (props: {element: any}) => {
         })
 
         return (
-            <FoldoutComponent 
-                name={props.element.type} 
+            <Foldout 
+                label={props.element.type} 
                 header={ <div style={{paddingLeft: '5px'}}>{props.element.Name ? props.element.Name.value : ''}</div>} 
                 onOpen={async () => { setIsOpen(true) }} 
                 onClosed={async () => { setIsOpen(false) }}
             >
                 {isOpen ? elements : <></>}
-            </FoldoutComponent>
+            </Foldout>
         )
     } else {
-        return <FoldoutElementComponent label={props.element.Name.value + ` (${props.element.type})`}/>
+        return <FoldoutElement label={props.element.Name.value + ` (${props.element.type})`}/>
     }
 }
 
@@ -51,9 +54,9 @@ export default function SpatialStructure() {
         })
 
         setSpatialStructure(
-            <FoldoutComponent sx={{border: '1px solid', borderColor: 'secondary.light'}} name={spatialStructure.type} header={<div style={{paddingLeft: '5px'}}>{ifcProject.Name.value}</div>}>
+            <Foldout sx={{border: '1px solid', borderColor: 'secondary.light'}} label={spatialStructure.type} header={<div style={{paddingLeft: '5px'}}>{ifcProject.Name.value}</div>}>
                 {elements}
-            </FoldoutComponent>
+            </Foldout>
         )
     }
 
@@ -67,8 +70,8 @@ export default function SpatialStructure() {
     }, [])
 
     return (
-        <WindowComponent label='Spatial Structure' root={rootRef} container={containerRef}>
+        <Window label='Spatial Structure' root={rootRef} container={containerRef}>
             {spatialStructure}
-        </WindowComponent>
+        </Window>
     )
 }

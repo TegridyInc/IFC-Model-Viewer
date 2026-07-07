@@ -1,8 +1,13 @@
 {
   "compilerOptions": {
     "outDir": "./dist/",
+    "baseUrl": ".",
     "paths": {
-	"scripts": ["./src/script/*"]
+      "@pim_platform/assets/*": ["public/assets/*"],
+      "@pim_platform/components/*": ["src/components/*"],
+      "@pim_platform/models/*": ["src/models/*"],
+      "@pim_platform/store/*": ["src/store/*"],
+      "@pim_platform/helpers/*": ["src/helpers/*"]
     },
     "noImplicitAny": true,
     "module": "esnext",

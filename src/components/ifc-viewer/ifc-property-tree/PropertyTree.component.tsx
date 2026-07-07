@@ -1,11 +1,15 @@
 import * as THREE from 'three'
 import * as FRA from '@thatopen/fragments'
 import { useState, useRef, useEffect, ChangeEvent, MouseEvent } from 'react'
-import { highlighter, culler, fragmentHider } from '../Viewer/Components'
-import { WindowComponent, FoldoutComponent, ToggleButton, ColorInput } from '../Utility/UIUtility.component'
-import { ModelFoldouts } from '../Utility/IFCUtility'
-import { IFCDispatcher, IFCModel } from '../Viewer/IFC'
+import { highlighter, culler, fragmentHider } from '../Components'
+import { ToggleButton } from '../inputs/Buttons'
+import ColorInput from '../inputs/Color'
+import Window from '@pim_platform/components/ifc-viewer/window/Window.component'
+
+import { ModelFoldouts } from '../IFCUtility'
+import { IFCDispatcher, IFCModel } from '../IFC'
 import { Stack, Tooltip } from '@mui/material'
+import Foldout from '../foldout/Foldout.component'
       
 interface TypeData {
     data: { [attibute: string]: any }[];
@@ -16,7 +20,7 @@ interface TypeData {
 
 const typeState = new Map<number, Map<number, { isVisible: boolean, isHighlighted: boolean, highlightColor: THREE.Color }>>();
 
-export default function PropertyTree() {
+export const PropertyTreeComponent = () => {
     const [ifcModel, setIFCModel] = useState<IFCModel>();
 
     const propertyTreeRoot = useRef<HTMLDivElement>(undefined);
@@ -42,9 +46,9 @@ export default function PropertyTree() {
     }, []);
 
     return(
-        <WindowComponent label='Property Tree' root={propertyTreeRoot} container={propertyTreeContainer} >
+        <Window label='Property Tree' root={propertyTreeRoot} container={propertyTreeContainer} >
             <TypeFoldouts ifcModel={ifcModel}></TypeFoldouts>
-        </WindowComponent>
+        </Window>
     )
 
     function OpenPropertyTree(event: { target: IFCDispatcher}) {
@@ -60,7 +64,7 @@ export default function PropertyTree() {
     }
 } 
 
-function TypeFoldouts(props: { ifcModel: IFCModel }) {
+const TypeFoldouts = (props: { ifcModel: IFCModel }) => {
     const [items, setItems] = useState([]);
 
     const mounted = useRef(false);
@@ -131,7 +135,7 @@ function TypeFoldouts(props: { ifcModel: IFCModel }) {
     }
 
     return (
-        <Stack spacing={1}>
+        <Stack spacing={.5}>
             {items}
         </Stack>
     )
@@ -214,8 +218,8 @@ const TypeFoldout = (props: {typeData: TypeData, ifcModel: IFCModel}) => {
     }
 
     return (
-        <FoldoutComponent sx={{border: '1px solid', borderColor: 'secondary.light'}} onClosed={async ()=> {setOpenState(false)}} onOpen={async ()=> {setOpenState(true)}} key={name} name={name} header={
-            <Stack sx={{marginLeft: 'auto', alignItems: 'center', marginRight: '5px'}} spacing={.5} direction={'row'}>
+        <Foldout sx={{border: '1px solid', borderColor: 'secondary.light'}} onClosed={async ()=> {setOpenState(false)}} onOpen={async ()=> {setOpenState(true)}} key={name} addRightPadding label={name} header={
+            <Stack sx={{marginLeft: 'auto', alignItems: 'center'}} spacing={.5} direction={'row'}>
                 <Tooltip title='Highlight Color'>
                     <ColorInput type="color" className='color-input' defaultValue={'#'+highlightColor.getHexString()} onChange={changeHighlightColor}/>
                 </Tooltip>
@@ -228,9 +232,8 @@ const TypeFoldout = (props: {typeData: TypeData, ifcModel: IFCModel}) => {
             </Stack>
         }>
             {isOpen ? objectsProperties : <></>}
-        </FoldoutComponent>
+        </Foldout>
     )
 }
 
-
-
+export default PropertyTreeComponent;

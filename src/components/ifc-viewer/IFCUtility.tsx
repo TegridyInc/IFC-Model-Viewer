@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { FoldoutComponent, FoldoutElementComponent } from './UIUtility.component';
-import { IFCModel } from '../Viewer/IFC'
+import Foldout from './foldout/Foldout.component';
+import FoldoutElement from './foldout/FoldoutElement.component';
+import { IFCModel } from './IFC'
 import { JSX } from 'react/jsx-runtime';
 import { SxProps } from '@mui/material';
 
@@ -16,9 +17,9 @@ export function ModelFoldouts(props: {sx?:SxProps, property: { [attribute: strin
     ]
 
     return (
-        <FoldoutComponent sx={props.sx} name={props.property.Name.value} onOpen={() => { setIsOpen(true) }} onClosed={() => { setIsOpen(false) }}>
+        <Foldout sx={props.sx} label={props.property.Name.value} onOpen={() => { setIsOpen(true) }} onClosed={() => { setIsOpen(false) }}>
             {isOpen ? foldouts : <></>}
-        </FoldoutComponent>
+        </Foldout>
     )
 }
 
@@ -29,8 +30,8 @@ function AttributesFoldout(props: { ifcModel:IFCModel, property: { [attribute: s
     const getAttributes = async () =>{
         setAttributes(
             [
-                <FoldoutElementComponent label='Class' value={webIFC.GetNameFromTypeCode(props.property.type)}></FoldoutElementComponent>,
-                (props.property.ObjectType ? <FoldoutElementComponent label='Object Type' value={props.property.ObjectType.value}></FoldoutElementComponent> : <></>)
+                <FoldoutElement label='Class' value={webIFC.GetNameFromTypeCode(props.property.type)}></FoldoutElement>,
+                (props.property.ObjectType ? <FoldoutElement label='Object Type' value={props.property.ObjectType.value}></FoldoutElement> : <></>)
             ]
         )
     }
@@ -45,11 +46,11 @@ function AttributesFoldout(props: { ifcModel:IFCModel, property: { [attribute: s
     }, []);
     
     return (
-        <FoldoutComponent name='Attributes' onOpen={()=>{setIsOpen(true)}} onClosed={()=>{setIsOpen(false)}}>
+        <Foldout label='Attributes' onOpen={()=>{setIsOpen(true)}} onClosed={()=>{setIsOpen(false)}}>
             {!isOpen ? <></> :
                 attributes
             }
-        </FoldoutComponent>
+        </Foldout>
     )
 }
 
@@ -91,10 +92,10 @@ function MaterialFoldout(props: { ifcModel:IFCModel, property: { [attribute: str
                 foldoutName.current = 'Layers';
 
                 return (
-                    <FoldoutComponent name='Layer'>
-                        {material ? <FoldoutElementComponent label='Material' value={material.Name.value}/> : <FoldoutElementComponent label='Material' value='Undefined'/>}
-                        {layer.LayerThickness ? <FoldoutElementComponent label='Layer Thickness' value={layer.LayerThickness.value}/> : <></>}
-                    </FoldoutComponent>
+                    <Foldout label='Layer'>
+                        {material ? <FoldoutElement label='Material' value={material.Name.value}/> : <FoldoutElement label='Material' value='Undefined'/>}
+                        {layer.LayerThickness ? <FoldoutElement label='Layer Thickness' value={layer.LayerThickness.value}/> : <></>}
+                    </Foldout>
                 )
             }))
             
@@ -103,10 +104,10 @@ function MaterialFoldout(props: { ifcModel:IFCModel, property: { [attribute: str
             const materialsProperty = materialProperty.Materials as any[];
             elements = await Promise.all(materialsProperty.map(async materialProperty => {
                 const material = await webIFC.properties.getItemProperties(id, materialProperty.value);
-                return <FoldoutElementComponent label={material.Name.value}></FoldoutElementComponent>;
+                return <FoldoutElement label={material.Name.value}></FoldoutElement>;
             }));
         } else {
-            elements = <FoldoutElementComponent label={materialProperty.Name.value}></FoldoutElementComponent>
+            elements = <FoldoutElement label={materialProperty.Name.value}></FoldoutElement>
         }
         
 
@@ -122,9 +123,9 @@ function MaterialFoldout(props: { ifcModel:IFCModel, property: { [attribute: str
     }, []);
     
     return (
-        <FoldoutComponent name={foldoutName.current} onOpen={()=>{setIsOpen(true)}} onClosed={()=>{setIsOpen(false)}}>
+        <Foldout label={foldoutName.current} onOpen={()=>{setIsOpen(true)}} onClosed={()=>{setIsOpen(false)}}>
             {isOpen ? materials : <></>}
-        </FoldoutComponent>
+        </Foldout>
     )
 }
 
@@ -153,12 +154,12 @@ const ClassificationsFoldout = (props: { property: { [attribute: string]: any },
 
                     elements.push(
                         relClassification.Name ?
-                        <FoldoutComponent name={classification.Name.value}>
-                            <FoldoutElementComponent label={relClassification.Name.value} value={relClassification.ItemReference.value}/>
-                        </FoldoutComponent> :
-                        <FoldoutComponent name={classification.Name.value}>
-                            <FoldoutElementComponent label={relClassification.ItemReference.value}/>
-                        </FoldoutComponent> 
+                        <Foldout label={classification.Name.value}>
+                            <FoldoutElement label={relClassification.Name.value} value={relClassification.ItemReference.value}/>
+                        </Foldout> :
+                        <Foldout label={classification.Name.value}>
+                            <FoldoutElement label={relClassification.ItemReference.value}/>
+                        </Foldout> 
                         
                     )
 
@@ -183,11 +184,11 @@ const ClassificationsFoldout = (props: { property: { [attribute: string]: any },
     
 
     return (
-        <FoldoutComponent name='Classifications' onOpen={()=>{setIsOpen(true)}} onClosed={()=>{setIsOpen(false)}}>
+        <Foldout label='Classifications' onOpen={()=>{setIsOpen(true)}} onClosed={()=>{setIsOpen(false)}}>
             {
                 isOpen ? classifications : <></>
             }
-        </FoldoutComponent>
+        </Foldout>
     )
 }
 
@@ -210,14 +211,14 @@ function PropertySetsFoldout(props: { property: { [attribute: string]: any }, if
                         if(!singleValue.NominalValue) 
                             return <></>
                         else
-                            return <FoldoutElementComponent label={singleValue.Name.value} value={singleValue.NominalValue.value + (singleValue.Unit ? " " + singleValue.Unit.value : "")}/>
+                            return <FoldoutElement label={singleValue.Name.value} value={singleValue.NominalValue.value + (singleValue.Unit ? " " + singleValue.Unit.value : "")}/>
                     }))
                 } 
                 
                 return(
-                    <FoldoutComponent name={propertySet.Name.value}>
+                    <Foldout label={propertySet.Name.value}>
                         {set}
-                    </FoldoutComponent>
+                    </Foldout>
                 )
             }))
 
@@ -235,9 +236,9 @@ function PropertySetsFoldout(props: { property: { [attribute: string]: any }, if
     }, [])
 
     return (
-        <FoldoutComponent name='Property Sets' onOpen={()=>{setIsOpen(true)}} onClosed={()=>{setIsOpen(false)}}>
+        <Foldout label='Property Sets' onOpen={()=>{setIsOpen(true)}} onClosed={()=>{setIsOpen(false)}}>
             {isOpen ? propertySets : <></>}
-        </FoldoutComponent>
+        </Foldout>
     )
 }
 
@@ -253,8 +254,8 @@ function SpatialElementFoldout(props: { property: { [attribute: string]: any }, 
         if (spatialElementProperty) {
             setSpatialElement(
                 [
-                    <FoldoutElementComponent label={'Name'} value={spatialElementProperty.Name.value}/>,
-                    (spatialElementProperty.Elevation ? <FoldoutElementComponent label='Elevation' value={spatialElementProperty.Elevation.value}/> : <></>)
+                    <FoldoutElement label={'Name'} value={spatialElementProperty.Name.value}/>,
+                    (spatialElementProperty.Elevation ? <FoldoutElement label='Elevation' value={spatialElementProperty.Elevation.value}/> : <></>)
                 ]
             )
         }
@@ -267,7 +268,7 @@ function SpatialElementFoldout(props: { property: { [attribute: string]: any }, 
             getSpatialStructure();
     }}, []);
 
-    return <FoldoutComponent name='Spatial Element'>{spatialElement}</FoldoutComponent>;
+    return <Foldout label='Spatial Element'>{spatialElement}</Foldout>;
 }
        
 function GetSpatialElement(spatialStructure: any, id: number): number | null {

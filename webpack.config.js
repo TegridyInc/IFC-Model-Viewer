@@ -2,6 +2,13 @@ const path = require('path');
 const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
+    devServer: {
+        static: {
+            directory: path.join(__dirname, "public"),
+        },
+        compress: true,
+        port: 9000,
+    },
     entry: './src/index.tsx',
     mode: 'development',
     module: {
@@ -15,6 +22,12 @@ module.exports = {
     },
     resolve: {
         extensions: ['.*', '.js', '.jsx', '.tsx', '.ts', '.component.tsx'],
+        alias: {
+            '@pim_platform/components': path.resolve(__dirname, 'src/components'),
+            
+            fs: false,
+            path: false
+        }
     },
     output: {
         filename: 'bundle.js',

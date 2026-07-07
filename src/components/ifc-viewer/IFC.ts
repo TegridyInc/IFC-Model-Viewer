@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import {FragmentsGroup} from '@thatopen/fragments'
-import {boundingBoxer} from './Components'
+import {boundingBoxer} from '../../components/ifc-viewer/Components'
 
 export interface BoundingBoxData {
     outline: THREE.BoxHelper;

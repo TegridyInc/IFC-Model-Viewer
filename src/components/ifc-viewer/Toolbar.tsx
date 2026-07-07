@@ -1,7 +1,7 @@
 import { exploder, culler, highlighter, clipper } from './Components'
 import { LoadIFCModel } from './IFCLoader'
 import { styled, Stack, Divider, ToggleButtonGroup, Tooltip } from '@mui/material';
-import { IconButton, ToggleButton } from '../Utility/UIUtility.component'
+import { IconButton, ToggleButton } from './inputs/Buttons'
 import { useRef, useState, useEffect, ChangeEvent, MouseEvent } from 'react';
 
 export enum Tools {
@@ -26,8 +26,8 @@ const ViewportControls = styled(Stack)(({theme})=>({
     transform: 'translateX(-50%)',
     border: `1px solid ${theme.palette.secondary.light}`,
     borderRadius: '5px',
-    backgroundColor: theme.palette.secondary.dark,
-    padding: '5px',
+    backgroundColor: theme.palette.primary.main,
+    padding: '3px',
 }))
 
 const ToolbarDivider = styled(Divider)(({theme})=>({
@@ -47,7 +47,7 @@ const ToolSelection = styled(ToggleButtonGroup)(({theme})=>({
     left: '50%',
     transform: 'translateX(-50%)',
     backgroundColor: theme.palette.secondary.dark   ,
-    border: `1px solid ${theme.palette.secondary.light}`,
+    border: `1px solid ${theme.palette.secondary.main}`,
     padding: '2px'
 }))
 
@@ -74,8 +74,7 @@ export default function Toolbar() {
 
         const reader = new FileReader();
         reader.onload = () => {
-            const data = new Uint8Array(reader.result as ArrayBuffer);
-            LoadIFCModel(data, file.name.split(".ifc")[0]);
+            LoadIFCModel(reader.result as ArrayBuffer, file.name.split(".ifc")[0]);
         }
 
         reader.readAsArrayBuffer(file);

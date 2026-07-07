@@ -1,13 +1,17 @@
 import * as FRA from '@thatopen/fragments'
-import { world, fragmentManager, worlds } from '../Viewer/Components'
-import {IconButton, WindowComponent, ToggleButton, FoldoutComponent, FoldoutElementComponent} from '../Utility/UIUtility.component';
-import { LoadIFCModel } from '../Viewer/IFCLoader' 
-import {IFCGroup, IFCModel} from '../Viewer/IFC'
+import { world, fragmentManager, worlds } from '../Components'
+import {IconButton, ToggleButton} from '../inputs/Buttons';
+import { LoadIFCModel } from '../IFCLoader' 
+import {IFCGroup, IFCModel} from '../IFC'
 import { useRef, useState, FormEvent, useEffect, MouseEvent } from 'react';
 import { JSX } from 'react/jsx-runtime';
 import { styled, Stack, Tooltip } from '@mui/material'
+import Foldout from '@pim_platform/components/ifc-viewer/foldout/Foldout.component'
+import FoldoutElement from '@pim_platform/components/ifc-viewer/foldout/FoldoutElement.component'
 
-const ModelManager = styled(WindowComponent)({
+import Window from '@pim_platform/components/ifc-viewer/window/Window.component'
+
+const ModelManager = styled(Window)({
     alignContent: 'center',
     paddingLeft: '5px'
 })
@@ -170,11 +174,11 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
         }
 
         elements.push(
-            <FoldoutComponent name='Application'>
-                <FoldoutElementComponent label='Name' value={applicationData.ApplicationFullName.value}/>
-                <FoldoutElementComponent label='Identifier' value={applicationData.ApplicationIdentifier.value}/>
-                <FoldoutElementComponent label='Version' value={applicationData.Version.value}/>
-            </FoldoutComponent>
+            <Foldout label='Application'>
+                <FoldoutElement label='Name' value={applicationData.ApplicationFullName.value}/>
+                <FoldoutElement label='Identifier' value={applicationData.ApplicationIdentifier.value}/>
+                <FoldoutElement label='Version' value={applicationData.Version.value}/>
+            </Foldout>
         )
 
         const organizationElements: any[] = [];
@@ -183,16 +187,16 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
             const organizationData = organizationDatas[id];
 
             organizationElements.push(
-                <FoldoutComponent name={organizationData.Name.value}>
-                    <FoldoutElementComponent label='Description' value={organizationData.Description != null ? organizationData.Description.value : ''}/>
-                </FoldoutComponent>
+                <Foldout label={organizationData.Name.value}>
+                    <FoldoutElement label='Description' value={organizationData.Description != null ? organizationData.Description.value : ''}/>
+                </Foldout>
             )
         }
         
         elements.push(
-            <FoldoutComponent name='Organizations'>
+            <Foldout label='Organizations'>
                 {organizationElements}
-            </FoldoutComponent>
+            </Foldout>
         )
 
         const classificationElements: any[] = [];
@@ -201,17 +205,17 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
         for(const id in classificationsData) {
             const classificationData = classificationsData[id] as any;
             classificationElements.push(
-                <FoldoutComponent name={classificationData.Name.value}>
-                    <FoldoutElementComponent label='Edition' value={classificationData.Edition.value}/>
-                    <FoldoutElementComponent label='Source' value={classificationData.Source.value}/>
-                </FoldoutComponent>
+                <Foldout label={classificationData.Name.value}>
+                    <FoldoutElement label='Edition' value={classificationData.Edition.value}/>
+                    <FoldoutElement label='Source' value={classificationData.Source.value}/>
+                </Foldout>
             )
         }
 
         elements.push(
-            <FoldoutComponent name='Classifications'>
+            <Foldout label='Classifications'>
                 {classificationElements}
-            </FoldoutComponent>
+            </Foldout>
         )
         
         setGeneralIFCData(elements);
@@ -227,7 +231,7 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
     }, [])
 
     return(
-        <FoldoutComponent name={ifcModel.name} key={props.ifcModel.ifcID} header={
+        <Foldout label={ifcModel.name} key={props.ifcModel.ifcID} header={
             <Stack sx={{alignItems: 'center'}} spacing={.5} direction={'row'}>
                 <Tooltip title='Spatial Structure'>
                     <IconButton onClick={openSpatialStructure}>package_2</IconButton>
@@ -246,12 +250,12 @@ const ModelItemComponent = (props: {ifcModel: IFCModel})=>{
                 </Tooltip>
             </Stack>
         }>  
-            <FoldoutComponent name='General'>
-                <FoldoutElementComponent label='Description' value={props.ifcModel.ifcMetadata.description}/>
-                <FoldoutElementComponent label='Schema' value={props.ifcModel.ifcMetadata.schema}/>
-            </FoldoutComponent>
+            <Foldout label='General'>
+                <FoldoutElement label='Description' value={props.ifcModel.ifcMetadata.description}/>
+                <FoldoutElement label='Schema' value={props.ifcModel.ifcMetadata.schema}/>
+            </Foldout>
             {generalIFCData}
-        </FoldoutComponent>
+        </Foldout>
     )
 }
 
@@ -269,8 +273,7 @@ const ModelGroupComponent = (props: {children: JSX.Element|JSX.Element[], group:
         reader.onload = () => {
             groupStates.set(group.uuid, [...groupStates.get(group.uuid), true])
             
-            const data = new Uint8Array(reader.result as ArrayBuffer);
-            LoadIFCModel(data, file.name.split(".ifc")[0], false, group);
+            LoadIFCModel(reader.result as ArrayBuffer, file.name.split(".ifc")[0], false, group);
         }
 
         reader.readAsArrayBuffer(file);
@@ -305,7 +308,7 @@ const ModelGroupComponent = (props: {children: JSX.Element|JSX.Element[], group:
     }
 
     return (
-        <FoldoutComponent sx={{border: '1px solid', borderColor: 'secondary.light'}} name='New Group' inputLabel key={props.group.uuid} header={
+        <Foldout sx={{border: '1px solid', borderColor: 'secondary.light'}} addRightPadding label='New Group' inputLabel key={props.group.uuid} header={
                 <Stack sx={{alignItems: 'center'}} spacing={.5} direction={'row'}>
                     <Tooltip title='Toggle Group Visibility'>
                         <ToggleButton value={visible} selected={visible} onClick={toggleVisibility}>
@@ -328,6 +331,6 @@ const ModelGroupComponent = (props: {children: JSX.Element|JSX.Element[], group:
                 </Stack>
             }> 
                 {props.children}
-        </FoldoutComponent>
+        </Foldout>
     )
 }

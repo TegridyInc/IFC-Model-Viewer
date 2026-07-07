@@ -1,7 +1,7 @@
-import { viewportContext } from '../Viewer/Viewer'
-import { WindowData } from './UIUtility.component'
+import { viewportContext } from '@pim_platform/components/ifc-viewer/Viewer'
 import { styled, Tab, Tabs } from '@mui/material';
 import { useRef, useEffect, createContext, useState, useContext } from 'react';
+import {WindowData} from '@pim_platform/components/ifc-viewer/window/Window.component'
 
 const Docker = styled('div')<{ fullscreen: boolean, leftDocker: boolean, open: boolean }>(({theme, fullscreen, leftDocker, open}) => ({
     display: 'flex',
@@ -20,7 +20,7 @@ const Docker = styled('div')<{ fullscreen: boolean, leftDocker: boolean, open: b
     right: fullscreen ? (leftDocker ? 'unset' : '0') : (leftDocker ? 'calc(100% + 2px)' : 'unset'),
 }))  
 
-const DockerTabs = styled(Tabs)({
+const DockerTabs = styled(Tabs)(({theme}) => ({
     height: '50px',
     width: '100%',
     display: 'flex',
@@ -30,7 +30,7 @@ const DockerTabs = styled(Tabs)({
     minHeight: 'unset',
 
     '*.MuiTabs-indicator': {
-        backgroundColor: 'var(--accent-color)'
+        backgroundColor: theme.palette.accent.main
     },
 
     '*.MuiTabs-scroller': {
@@ -40,17 +40,19 @@ const DockerTabs = styled(Tabs)({
     '*.MuiTabs-list': {
         height: '100%'
     }
-})
+}))
 
 const DockerTab = styled(Tab)(({theme})=>({
     fontWeight: 'bold',
+    fontSize: '16px',
+    textTransform: 'none',
     backgroundColor: theme.palette.primary.dark,
     color: theme.palette.secondary.light,
     minHeight: 'unset',
     
     '&.Mui-selected': {
         color: theme.palette.text.primary,
-        backgroundColor: theme.palette.secondary.main,
+        backgroundColor: theme.palette.primary.main,
         border: `0px solid ${theme.palette.secondary.light}`,
         borderBottomWidth: '1px',
     }
@@ -119,7 +121,7 @@ const DockerCloser = styled('div', {target: 'material-symbols-outlined unselecta
 
 }))
 
-export default function DockerComponent(props: {isLeftDocker: boolean}) {
+export const DockerComponent = (props: {isLeftDocker: boolean}) => {
     const dockerRef = useRef<HTMLDivElement>(undefined)
     const dockerTabsRef = useRef<HTMLDivElement>(undefined)
     const dockerContainersRef = useRef<HTMLDivElement>(undefined)
@@ -254,3 +256,5 @@ export default function DockerComponent(props: {isLeftDocker: boolean}) {
         </Docker>
     )
 }   
+
+export default DockerComponent;

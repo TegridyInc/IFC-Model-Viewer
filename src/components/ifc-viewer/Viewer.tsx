@@ -1,25 +1,25 @@
 import * as Stats from 'stats.js';
 import { IfcAPI } from 'web-ifc'
 
-import { Icon, styled } from '@mui/material'
+import { styled } from '@mui/material'
 import { useRef, useState, MouseEvent, useEffect, createContext, useContext } from 'react';
-import { BigButton, IconButton } from '../Utility/UIUtility.component';
+import { BigButton, IconButton } from './inputs/Buttons';
 
 import Container, {culler, world } from './Components';
 import { IFCModel } from './IFC';
 
 import ToolBar from './Toolbar'
-import NotificationsComponent from './Notifications';
-import ModelManager from '../Functions/ModelManager.component';
-import PropertyTree from '../Functions/PropertyTree';
-import Properties from '../Functions/Properties'; 
-import SpatialStructure from '../Functions/SpatialStructure'
-import Plans from '../Functions/Plans'
-import Docker from '../Utility/DockerUtility'
-import Settings from '../Utility/Settings'
+import Notifications from './notification/Notifications.component';
+import ModelManager from './ifc-model-manager/ModelManager.component';
+import PropertyTree from './ifc-property-tree/PropertyTree.component';
+import Properties from './ifc-properties/Properties.component'; 
+import SpatialStructure from './ifc-spatial-structure/SpatialStructure.component'
+import Plans from './plans/Plans.component'
+import Docker from './docker/Docker.component'
+import Settings from './ifc-settings/Settings.component'
 
-import '../Functions/TransformControls'
-import '../Functions/Culler' 
+import '@pim_platform/components/ifc-viewer/TransformControls'
+import '@pim_platform/components/ifc-viewer/Culler' 
 
 declare global {
     var debug: Function;
@@ -59,11 +59,11 @@ export function DisableCustomView() {
     document.dispatchEvent(onCustomViewDisabled)
 }
 
-const Viewport = styled('div')<{fullscreen: boolean, minimized: boolean}>(({theme, fullscreen, minimized})=>({
+const Viewport = styled('div')<ViewportContextData>(({theme, fullscreen, minimized})=>({
     display: minimized ? 'none' : 'flex',
     alignItems: 'center',
     flexDirection: 'column',
-    position: 'absolute',
+    position: fullscreen ? 'relative' : 'absolute',
     width: fullscreen ? '100%' : 'unset',
     height: fullscreen ? '100%' : 'unset',
     zIndex: '100',
@@ -95,6 +95,10 @@ const CustomViewportViewLabel = styled('div')(({theme})=>({
     color: 'black'
 }))
 
+const ViewerButtonContainer = styled('div')({
+
+})
+
 const ViewportMinimized = styled(BigButton)<{minimized: boolean}>(({minimized}) => ({
     display: minimized ? 'flex' : 'none',
     position: 'absolute',
@@ -106,22 +110,29 @@ const ViewportMinimized = styled(BigButton)<{minimized: boolean}>(({minimized}) 
     cursor: 'pointer',
 }));
 
-const ViewportLabel = styled('div')<{fullscreen: boolean}>(({fullscreen, theme}) => ({
-    position: 'relative',
-    backgroundColor: theme.palette.secondary.main,
-    padding: '10px 5px',
+const ViewportLabelContainer = styled('div')<{fullscreen: boolean}>(({fullscreen, theme}) => ({
+    backgroundColor: theme.palette.primary.main,
+    padding: '5px',
     width: '100%',
     textAlign: 'center',
     borderRadius: fullscreen ? '0px' : '5px 5px 0px 0px',
     boxSizing: 'border-box',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    position: 'relative'
 }))
 
-const ViewportButtonContainer = styled('div')({
+const ViewportLabel = styled('div')({
     position: 'absolute',
-    right: '5px',
     top: '50%',
-    transform: 'translateY(-50%)',
+    left: '50%',
+    transform: 'translate(-50%, -50%)'
+})
+
+const ViewportButtonContainer = styled('div')({
+
 })
 
 const ViewportButton = styled(IconButton, {target: 'material-symbols-outlined'})({
@@ -130,14 +141,14 @@ const ViewportButton = styled(IconButton, {target: 'material-symbols-outlined'})
     boxShadow: 'unset !important',
 })
 
-type ViewportContext = {
+type ViewportContextData = {
     fullscreen: boolean;
     minimized: boolean;
 }
 
-const ViewporContext = createContext<ViewportContext>({fullscreen: false, minimized: false});
+const ViewportContext = createContext<ViewportContextData>({fullscreen: false, minimized: false});
 
-export const viewportContext = () => useContext(ViewporContext);
+export const viewportContext = () => useContext(ViewportContext);
 
 export default function Viewer() {
     const viewportRef = useRef<HTMLDivElement>(undefined);
@@ -229,16 +240,21 @@ export default function Viewer() {
     }, []) 
 
     return (     
-        <ViewporContext.Provider value={{fullscreen: isFullscreen, minimized: false}}>
+        <ViewportContext.Provider value={{fullscreen: isFullscreen, minimized: false}}>
             <Viewport ref={viewportRef} id='viewport' fullscreen={isFullscreen} minimized={isMinimized}>
-                <ViewportLabel className='unselectable' onMouseDown={handleViewport} fullscreen={isFullscreen}>
-                    IFC Viewer
+                <ViewportLabelContainer className='unselectable' onMouseDown={handleViewport} fullscreen={isFullscreen}>
+                    <ViewerButtonContainer>
+                        
+                    </ViewerButtonContainer>
+                    <ViewportLabel>
+                        IFC Viewer
+                    </ViewportLabel>
                     <ViewportButtonContainer>
                         <ViewportButton onClick={toggleMinimize}>minimize</ViewportButton>
                         <ViewportButton onClick={toggleFullscreen}>{isFullscreen ? 'fullscreen_exit' : 'fullscreen'}</ViewportButton>
                         <ViewportButton onClick={closeViewport}>close</ViewportButton>
                     </ViewportButtonContainer>
-                </ViewportLabel>
+                </ViewportLabelContainer>
                 <Container>
                     <CustomViewportView hidden={!customView}>
                         <CustomViewportViewLabel>{customViewLabel}</CustomViewportViewLabel>
@@ -249,13 +265,13 @@ export default function Viewer() {
                 <ToolBar/>
             </Viewport>
             <ViewportMinimized onClick={toggleMinimize} minimized={isMinimized}>IFC Viewer</ViewportMinimized>
-            <NotificationsComponent/>
+            <Notifications/>
             <ModelManager/>
             <PropertyTree/>
             <Properties/>
             <SpatialStructure/>
             <Plans/>
             <Settings/>
-        </ViewporContext.Provider>
+        </ViewportContext.Provider>
     );
 }

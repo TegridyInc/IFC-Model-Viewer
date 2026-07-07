@@ -1,8 +1,8 @@
-import { highlighter } from '../Viewer/Components'
-import { ModelFoldouts } from '../Utility/IFCUtility'
-import { IFCModel }  from '../Viewer/IFC'
+import { highlighter } from '../Components'
+import { ModelFoldouts } from '../IFCUtility'
+import { IFCModel }  from '@pim_platform/components/ifc-viewer/IFC'
 import { Stack } from '@mui/material'
-import { WindowComponent } from '../Utility/UIUtility.component'
+import Window from '@pim_platform/components/ifc-viewer/window/Window.component'
 import { useRef, useState, useEffect } from 'react'
 
 var ifcModels: IFCModel[] = [];
@@ -81,7 +81,7 @@ export default function Properties() {
     }, [])
 
     return (
-        <WindowComponent label='Properties' root={propertiesRootRef} container={propertiesContainerRef}>
+        <Window label='Properties' root={propertiesRootRef} container={propertiesContainerRef}>
             {
                 properties.length != 0 ?
                 <Stack spacing={.5}>
@@ -89,6 +89,6 @@ export default function Properties() {
                 </Stack>
                 : <></>
             }
-        </WindowComponent>
+        </Window>
     );
 }

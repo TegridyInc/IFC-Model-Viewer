@@ -1,9 +1,10 @@
-import { DisableCustomView, EnableCustomView } from '../Viewer/Viewer'
-import { plans, highlighter, classifier, edges, world, fragmentManager, grid } from '../Viewer/Components'
-import { DisableTool, EnableTool } from '../Viewer/Toolbar'
-import { Notification } from '../Viewer/Notifications'
-import { BigButton, WindowComponent } from '../Utility/UIUtility.component'
-import { IFCDispatcher, IFCModel } from '../Viewer/IFC'
+import { DisableCustomView, EnableCustomView } from '../Viewer'
+import { plans, highlighter, classifier, edges, world, fragmentManager, grid } from '../Components'
+import { DisableTool, EnableTool } from '../Toolbar'
+import { Notification } from '../notification/Notifications.component'
+import { BigButton } from '../inputs/Buttons'
+import Window from '@pim_platform/components/ifc-viewer/window/Window.component'
+import { IFCDispatcher, IFCModel } from '@pim_platform/components/ifc-viewer/IFC'
 import { useState, useRef, useEffect } from 'react'
 import { Stack } from '@mui/material'
 import * as THREE from 'three'
@@ -19,7 +20,7 @@ const blackOutline = new THREE.MeshBasicMaterial({
   transparent: true,
 });
 
-export default function Plans() {
+export const PlansComponent = () => {
     const [plansList, setPlans] = useState([]);
 
     const plansRootRef = useRef<HTMLDivElement>(undefined);
@@ -153,14 +154,15 @@ export default function Plans() {
     }
 
     return (
-        <WindowComponent label='Plans' root={plansRootRef} container={plansContainerRef} onClose={ExitPlans}>
+        <Window label='Plans' root={plansRootRef} container={plansContainerRef} onClose={ExitPlans}>
             {plansList.length != 0 ?
                 <Stack spacing={.5}>
                     {plansList}
                 </Stack>
                 : <></>
             }
-        </WindowComponent>
+        </Window>
     )
 }
 
+export default PlansComponent;
